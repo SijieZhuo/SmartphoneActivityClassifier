@@ -1,17 +1,10 @@
-import tkinter as tk
-from typing import List, Any
-import os
-import datetime
-
-import Main
-import bluetooth
 import _thread
-import CollectPage
+import os
+import tkinter as tk
+import bluetooth
 
 
 class StartPage(tk.Frame):
-    # list that stores the available devices
-    devices: List[Any] = []
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -21,8 +14,16 @@ class StartPage(tk.Frame):
         connect_btn.pack()
 
         self.collect_page_btn = tk.Button(self, text="Collect data", state=tk.DISABLED,
-                                          command=lambda:collect_btn_hit(self))
+                                          command=lambda: controller.show_frame("CollectPage"))
         self.collect_page_btn.pack()
+
+        self.feature_page_btn = tk.Button(self, text="Feature extraction",
+                                          command=lambda: controller.show_frame("FeatureExtractionPage"))
+        self.feature_page_btn.pack()
+
+        self.classify_page_btn = tk.Button(self, text="Classify",
+                                           command=lambda: controller.show_frame("ClassifyPage"))
+        self.classify_page_btn.pack()
 
     # refresh the bt devices options in the dropdown menu
     def refresh_option(self):
@@ -59,15 +60,6 @@ def bt_connect_hit(page):
     page.collect_page_btn['state'] = 'normal'
 
     _thread.start_new_thread(collect_data, (client_sock, page.controller))
-
-
-def collect_btn_hit(page):
-    page.controller.show_frame("CollectPage")
-    if not os.path.exists("Data"):
-        os.makedirs("Data")
-
-
-
 
 
 def collect_data(client, main):

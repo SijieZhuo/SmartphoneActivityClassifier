@@ -1,13 +1,27 @@
+import os
 import tkinter as tk
 from tkinter import font as tkfont
 import StartPage
 import CollectPage
+import FeatureExtractionPage
+import ClassifyPage
 
+
+window_size = 10
 
 class ClassifierApp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+
+        if not os.path.exists("Data"):
+            os.makedirs("Data")
+
+        if not os.path.exists("Data/DataForAnalysation"):
+            os.makedirs("Data/DataForAnalysation")
+
+        if not os.path.exists("Data/TrainingSet"):
+            os.makedirs("Data/TrainingSet")
 
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
@@ -22,8 +36,10 @@ class ClassifierApp(tk.Tk):
         self.current_data = PhoneData()
         self.current_data.data = []
 
+
         self.frames = {}
-        for F in (StartPage.StartPage, CollectPage.CollectPage):
+        for F in (StartPage.StartPage, CollectPage.CollectPage, FeatureExtractionPage.FeatureExtractionPage,
+                  ClassifyPage.ClassifyPage):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -34,8 +50,6 @@ class ClassifierApp(tk.Tk):
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("StartPage")
-
-
 
     def show_frame(self, page_name):
         '''Show a frame for the given page name'''

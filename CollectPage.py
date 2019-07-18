@@ -1,10 +1,8 @@
 import csv
-import tkinter as tk
-import StartPage
 import datetime
-import numpy as np
 import os
 import re
+import tkinter as tk
 
 
 class CollectPage(tk.Frame):
@@ -53,7 +51,7 @@ class CollectPage(tk.Frame):
         record_btn.grid(row=5, column=1)
 
         self.folderName = ""
-        self.currentActivity = ""
+        self.currentActivity = "finished"
         self.isRecording = False
 
     def update_data(self, data):
@@ -64,33 +62,60 @@ class CollectPage(tk.Frame):
         phone_data = data4.replace(']', '').split(',')
 
         if len(phone_data) != 45:
-            print(self.folderName)
+            print("current: " + self.currentActivity)
+            print(phone_data)
+
             if len(phone_data) == 1:
-                if phone_data[0] != "finished":
-                    self.setup_activity_folder(phone_data[0])
-                    self.isRecording = True
-                else:
-                    self.change_label_color("green")
-                    self.isRecording = False
+               # print(phone_data)
+                if phone_data[0].count(phone_data[0][:5]) > 1:
+                    phone_data[0] = phone_data[0][:int((len(phone_data[0]) / 2))]
+                    print(phone_data[0])
+                self.update_avtivity(phone_data[0])
         else:
             if self.isRecording is True:
+                print(phone_data[0] + "  " + phone_data[-1])
+
+                string = re.findall('[a-zA-Z_]', phone_data[0])
+                front = ''.join(string)
+                string2 = re.findall('[a-zA-Z_]', phone_data[-1])
+                rear = ''.join(string2)
+                if front != '':
+                    self.update_avtivity(front)
+                    return
+                if rear != '':
+                    self.update_avtivity(rear)
+                    return
+
+                phone_data[0] = re.sub('[a-zA-Z_]', '', phone_data[0])
+                phone_data[-1] = re.sub('[a-zA-Z_]', '', phone_data[-1])
 
                 float_data = [float(i) for i in phone_data]
                 separated = [float_data[x:x + 9] for x in range(0, len(float_data), 9)]
                 for row in separated:
                     row.append(self.currentActivity)
 
-                fileName = "Data/" + self.folderName + "/" + self.currentActivity + ".csv"
+                fileName = "Data/" + self.folderName + "/" + self.folderName + "_" + self.currentActivity + ".csv"
                 with open(fileName, 'a', newline='') as csvFile:
                     writer = csv.writer(csvFile)
                     for row in separated:
                         writer.writerow(row)
                 csvFile.close()
 
+    def update_avtivity(self, activity):
+        if self.currentActivity == "finished":
+            if activity != "finished":
+                self.setup_activity_folder(activity)
+                self.isRecording = True
+        else:  # current activity is not finished
+            if activity == "finished":
+                self.change_label_color("green")
+                self.isRecording = False
+                self.currentActivity = "finished"
+
     def setup_activity_folder(self, name):
         self.currentActivity = name
         self.change_label_color("blue")
-        csvName = "Data/" + self.folderName + "/" + name + ".csv"
+        csvName = "Data/" + self.folderName + "/" + self.folderName + "_" + name + ".csv"
         print(csvName)
         with open(csvName, 'w', newline='') as writeFile:
             writer = csv.writer(writeFile)
