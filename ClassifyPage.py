@@ -40,26 +40,28 @@ class ClassifyPage(tk.Frame):
         classify_btn.pack()
 
     def update_data(self, data):
+
         if self.is_classifying is True:
             data2 = data.decode("utf-8")
             data3 = data2.replace(' ', '')
             data4 = data3.replace('[', '')
             phone_data = data4.replace(']', '').split(',')
+            if len(phone_data) == 45:
+                float_data = [float(i) for i in phone_data]
+                separated = [float_data[x:x + 9] for x in range(0, len(float_data), 9)]
 
-            float_data = [float(i) for i in phone_data]
-            separated = [float_data[x:x + 9] for x in range(0, len(float_data), 9)]
+                for row in separated:
+                    self.data_window.append(row)
 
-            for row in separated:
-                self.data_window.append(row)
-
-            if len(self.data_window) == Main.window_size:
-                self.current_processed_data.data = FeatureExtractionPage.feature_extraction(np.array(self.data_window))
-                del self.data_window[:(int(Main.window_size / 2))]
+                if len(self.data_window) == Main.window_size:
+                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction(
+                        np.array(self.data_window))
+                    del self.data_window[:(int(Main.window_size / 2))]
 
     def classify_window(self, data):
         if self.is_classifying is True:
             prediction = self.clf.predict([data])
-            print("prediction is : " + prediction)
+            print(prediction)
 
 
 def browse_btn_hit(folder_path):

@@ -3,21 +3,26 @@ import os
 import tkinter as tk
 import pandas as pd
 import numpy as np
+import _thread
 
 import Main
+
 
 class FeatureExtractionPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        analyse_btn = tk.Button(self, text="Analyse", command=lambda: analyse_data())
+        analyse_btn = tk.Button(self, text="Analyse", command=lambda: analyse_btn_hit())
         analyse_btn.pack()
+
+
+def analyse_btn_hit():
+    _thread.start_new_thread(analyse_data(), ())
 
 
 def analyse_data():
     filename_list = []
-
 
     for file in os.listdir("Data/DataForAnalysation"):
         if file.endswith(".csv"):
@@ -37,8 +42,8 @@ def analyse_data():
         for window in sectioned_data:
             data = feature_extraction(window)
             output_data.append(data)
-            #print(data)
-            #print("")
+            # print(data)
+            # print("")
 
         length = len(output_data)
         output_target = [[activity]] * length
@@ -88,14 +93,13 @@ def get_target(inputdata):
 
 
 def feature_extraction(data):
-
     column_mean = data.mean(axis=0)
     column_sd = data.std(axis=0)
     column_varience = data.var(axis=0)
     column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
     column_ara = average_resultant_acceleration(data)
 
-    features = np.concatenate((column_mean,column_sd, column_varience, column_mean_absolute_deviation, column_ara))
+    features = np.concatenate((column_mean, column_sd, column_varience, column_mean_absolute_deviation, column_ara))
     return features
 
 
