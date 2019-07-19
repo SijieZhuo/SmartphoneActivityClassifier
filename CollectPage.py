@@ -71,6 +71,17 @@ class CollectPage(tk.Frame):
                     phone_data[0] = phone_data[0][:int((len(phone_data[0]) / 2))]
                     print(phone_data[0])
                 self.update_avtivity(phone_data[0])
+            elif len(phone_data) == 2:
+                print(phone_data)
+                csvName = "Data/" + self.folderName + "/" + self.folderName + "_questions.csv"
+                print(csvName)
+                with open(csvName, 'a', newline='') as writeFile:
+                    writer = csv.writer(writeFile)
+                    writer.writerows(phone_data)
+                    print("write")
+                writeFile.close()
+
+
         else:
             if self.isRecording is True:
                 print(phone_data[0] + "  " + phone_data[-1])

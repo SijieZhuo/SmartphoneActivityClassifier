@@ -60,7 +60,7 @@ class ClassifyPage(tk.Frame):
 
     def classify_window(self, data):
         if self.is_classifying is True:
-            prediction = self.clf.predict([data])
+            prediction = self.clf.predict_proba([data])
             print(prediction)
 
 

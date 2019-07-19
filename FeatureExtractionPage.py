@@ -13,12 +13,8 @@ class FeatureExtractionPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        analyse_btn = tk.Button(self, text="Analyse", command=lambda: analyse_btn_hit())
+        analyse_btn = tk.Button(self, text="Analyse", command=lambda: analyse_data())
         analyse_btn.pack()
-
-
-def analyse_btn_hit():
-    _thread.start_new_thread(analyse_data(), ())
 
 
 def analyse_data():
@@ -93,13 +89,16 @@ def get_target(inputdata):
 
 
 def feature_extraction(data):
-    column_mean = data.mean(axis=0)
-    column_sd = data.std(axis=0)
-    column_varience = data.var(axis=0)
+    column_mean = pd.DataFrame(data).mean(axis=0)
+    column_sd = pd.DataFrame(data).std(axis=0)
+    column_varience = pd.DataFrame(data).var(axis=0)
+    column_min = pd.DataFrame(data).min(axis=0)
+    column_max = pd.DataFrame(data).max(axis=0)
     column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
     column_ara = average_resultant_acceleration(data)
 
-    features = np.concatenate((column_mean, column_sd, column_varience, column_mean_absolute_deviation, column_ara))
+    features = np.concatenate(
+        (column_mean, column_sd, column_varience, column_min, column_max, column_mean_absolute_deviation, column_ara))
     return features
 
 
