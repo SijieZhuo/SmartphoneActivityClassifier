@@ -3,6 +3,8 @@ import os
 import tkinter as tk
 import pandas as pd
 import numpy as np
+from scipy.fftpack import fft
+from scipy.stats import skew, kurtosis, iqr
 import _thread
 
 import Main
@@ -15,6 +17,9 @@ class FeatureExtractionPage(tk.Frame):
 
         analyse_btn = tk.Button(self, text="Analyse", command=lambda: analyse_data())
         analyse_btn.pack()
+
+        back_btn = tk.Button(self, text="back", command=lambda:  controller.show_frame("StartPage"))
+        back_btn.pack()
 
 
 def analyse_data():
@@ -33,37 +38,22 @@ def analyse_data():
         file = pd.read_csv(filepath)
 
         activity = get_target((file))[1]
-        output_data = []
         sectioned_data = sliding_window(pd.DataFrame(get_data(file)), Main.window_size, int(Main.window_size / 2))
         for window in sectioned_data:
+
             data = feature_extraction(window)
-            output_data.append(data)
-            # print(data)
-            # print("")
 
-        length = len(output_data)
-        output_target = [[activity]] * length
+            with open("Data/TrainingSet/data.csv", 'a', newline='') as writeDataFile:
+                writer = csv.writer(writeDataFile)
+                writer.writerows([data])
+            writeDataFile.close()
 
-        if result_data is None:
-            result_data = output_data
-        else:
-            result_data = np.concatenate((result_data, output_data))
-        if result_target is None:
-            result_target = output_target
-        else:
-            result_target = np.concatenate((result_target, output_target))
+            with open("Data/TrainingSet/target.csv", 'a', newline='') as writeTargetFile:
+                writer = csv.writer(writeTargetFile)
+                writer.writerows([[activity]])
+            writeTargetFile.close()
 
-    with open("Data/TrainingSet/data.csv", 'w', newline='') as writeDataFile:
-        writer = csv.writer(writeDataFile)
-        writer.writerows(result_data)
         print("write")
-    writeDataFile.close()
-
-    with open("Data/TrainingSet/target.csv", 'w', newline='') as writeTargetFile:
-        writer = csv.writer(writeTargetFile)
-        writer.writerows(result_target)
-        print("write")
-    writeTargetFile.close()
 
 
 def sliding_window(data, window_size, step_size):
@@ -95,10 +85,15 @@ def feature_extraction(data):
     column_min = pd.DataFrame(data).min(axis=0)
     column_max = pd.DataFrame(data).max(axis=0)
     column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
+    column_iqr = iqr(data, axis=0)
     column_ara = average_resultant_acceleration(data)
+    column_skewness = skew(data, axis=0)
+    column_kurtosis = kurtosis(data, axis=0)
+    column_sma = sma(data)
 
     features = np.concatenate(
-        (column_mean, column_sd, column_varience, column_min, column_max, column_mean_absolute_deviation, column_ara))
+        (column_mean, column_sd, column_varience, column_min, column_max, column_mean_absolute_deviation, column_iqr,
+         column_ara, column_skewness, column_kurtosis, column_sma))
     return features
 
 
@@ -106,10 +101,30 @@ def average_resultant_acceleration(data):
     acc_sum = 0.0
     gyro_sum = 0.0
     magnet_sum = 0.0
-    for column in data:
-        acc = np.math.sqrt(column[0] ** 2 + column[1] ** 2 + column[2] ** 2)
-        gyro = np.math.sqrt(column[3] ** 2 + column[4] ** 2 + column[5] ** 2)
-        magnet = np.math.sqrt(column[6] ** 2 + column[7] ** 2 + column[8] ** 2)
+    for row in data:
+        acc = np.math.sqrt(row[0] ** 2 + row[1] ** 2 + row[2] ** 2)
+        gyro = np.math.sqrt(row[3] ** 2 + row[4] ** 2 + row[5] ** 2)
+        magnet = np.math.sqrt(row[6] ** 2 + row[7] ** 2 + row[8] ** 2)
+
+        acc_sum = acc_sum + acc
+        gyro_sum = gyro_sum + gyro
+        magnet_sum = magnet_sum + magnet
+
+    average_acc = acc_sum / len(data)
+    average_gyro = gyro_sum / len(data)
+    average_magnet = magnet_sum / len(data)
+
+    return [average_acc, average_gyro, average_magnet]
+
+
+def sma(data):
+    acc_sum = 0.0
+    gyro_sum = 0.0
+    magnet_sum = 0.0
+    for row in data:
+        acc = abs(row[0]) + abs(row[1]) + abs(row[2])
+        gyro = abs(row[3]) + abs(row[4]) + abs(row[5])
+        magnet = abs(row[6]) + abs(row[7]) + abs(row[8])
 
         acc_sum = acc_sum + acc
         gyro_sum = gyro_sum + gyro

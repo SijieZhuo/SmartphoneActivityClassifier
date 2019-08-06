@@ -6,8 +6,8 @@ import CollectPage
 import FeatureExtractionPage
 import ClassifyPage
 
-
-window_size = 10
+#sampling frequency is 50hz
+window_size = 500
 
 class ClassifierApp(tk.Tk):
 

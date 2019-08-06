@@ -50,6 +50,9 @@ class CollectPage(tk.Frame):
         self.record_btn_text.set("start recording")
         record_btn.grid(row=5, column=1)
 
+        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
+        back_btn.grid(row=6, column=1)
+
         self.folderName = ""
         self.currentActivity = "finished"
         self.isRecording = False
@@ -66,7 +69,7 @@ class CollectPage(tk.Frame):
             print(phone_data)
 
             if len(phone_data) == 1:
-               # print(phone_data)
+                # print(phone_data)
                 if phone_data[0].count(phone_data[0][:5]) > 1:
                     phone_data[0] = phone_data[0][:int((len(phone_data[0]) / 2))]
                     print(phone_data[0])
@@ -80,8 +83,6 @@ class CollectPage(tk.Frame):
                     writer.writerows(phone_data)
                     print("write")
                 writeFile.close()
-
-
         else:
             if self.isRecording is True:
                 print(phone_data[0] + "  " + phone_data[-1])

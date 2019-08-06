@@ -39,6 +39,9 @@ class ClassifyPage(tk.Frame):
         classify_btn = tk.Button(self, text="Classify", command=lambda: classify_btn_hit(self))
         classify_btn.pack()
 
+        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
+        back_btn.pack()
+
     def update_data(self, data):
 
         if self.is_classifying is True:
@@ -60,7 +63,7 @@ class ClassifyPage(tk.Frame):
 
     def classify_window(self, data):
         if self.is_classifying is True:
-            prediction = self.clf.predict_proba([data])
+            prediction = self.clf.predict([data])
             print(prediction)
 
 
