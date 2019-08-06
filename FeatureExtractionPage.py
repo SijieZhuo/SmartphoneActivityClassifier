@@ -80,19 +80,19 @@ def get_target(inputdata):
 
 def feature_extraction(data):
     column_mean = pd.DataFrame(data).mean(axis=0)
-    column_sd = pd.DataFrame(data).std(axis=0)
-    column_varience = pd.DataFrame(data).var(axis=0)
-    column_min = pd.DataFrame(data).min(axis=0)
-    column_max = pd.DataFrame(data).max(axis=0)
-    column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
-    column_iqr = iqr(data, axis=0)
+    #column_sd = pd.DataFrame(data).std(axis=0)
+    #column_varience = pd.DataFrame(data).var(axis=0)
+    #column_min = pd.DataFrame(data).min(axis=0)
+    #column_max = pd.DataFrame(data).max(axis=0)
+    #column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
+    #column_iqr = iqr(data, axis=0)
     column_ara = average_resultant_acceleration(data)
     column_skewness = skew(data, axis=0)
     column_kurtosis = kurtosis(data, axis=0)
     column_sma = sma(data)
 
     features = np.concatenate(
-        (column_mean, column_sd, column_varience, column_min, column_max, column_mean_absolute_deviation, column_iqr,
+        (column_mean,
          column_ara, column_skewness, column_kurtosis, column_sma))
     return features
 

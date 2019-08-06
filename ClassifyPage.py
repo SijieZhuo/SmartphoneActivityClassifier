@@ -5,6 +5,9 @@ import pandas as pd
 import Main
 import FeatureExtractionPage
 import numpy as np
+import csv
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class ClassifyPage(tk.Frame):
@@ -41,6 +44,38 @@ class ClassifyPage(tk.Frame):
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
+
+        test_btn = tk.Button(self, text="test", command=lambda: self.check_data())
+        test_btn.pack()
+
+    def check_data(self):
+        data_file = pd.read_csv(self.data_file_path.get())
+        target_file = pd.read_csv(self.target_file_path.get())
+
+        corr = data_file.corr()
+        #corr = corr.values
+        print(corr)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
+        fig.colorbar(cax)
+        ticks = np.arange(0, len(corr.columns), 1)
+        ax.set_xticks(ticks)
+        plt.xticks(rotation=90)
+        ax.set_yticks(ticks)
+        ax.set_xticklabels(corr.columns)
+        ax.set_yticklabels(corr.columns)
+        plt.show()
+
+        corr = corr.values
+        with open("Data/TrainingSet/corr.csv", 'w', newline='') as writeDataFile:
+            writer = csv.writer(writeDataFile)
+            writer.writerows(corr)
+        writeDataFile.close()
+
+
+
 
     def update_data(self, data):
 
