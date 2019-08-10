@@ -6,7 +6,7 @@ import numpy as np
 from scipy.fftpack import fft
 from scipy.stats import skew, kurtosis, iqr
 import _thread
-
+from tsfresh import extract_features
 import Main
 
 
@@ -18,7 +18,7 @@ class FeatureExtractionPage(tk.Frame):
         analyse_btn = tk.Button(self, text="Analyse", command=lambda: analyse_data())
         analyse_btn.pack()
 
-        back_btn = tk.Button(self, text="back", command=lambda:  controller.show_frame("StartPage"))
+        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
 
 
@@ -40,7 +40,6 @@ def analyse_data():
         activity = get_target((file))[1]
         sectioned_data = sliding_window(pd.DataFrame(get_data(file)), Main.window_size, int(Main.window_size / 2))
         for window in sectioned_data:
-
             data = feature_extraction(window)
 
             with open("Data/TrainingSet/data.csv", 'a', newline='') as writeDataFile:
@@ -77,15 +76,18 @@ def get_data(inputdata):
 def get_target(inputdata):
     return inputdata[inputdata.columns[9]]
 
+def feature_extraction2(data):
+    return extract_features(pd.DataFrame(data), column_id='id', column_sort='time')
+
 
 def feature_extraction(data):
     column_mean = pd.DataFrame(data).mean(axis=0)
     #column_sd = pd.DataFrame(data).std(axis=0)
     #column_varience = pd.DataFrame(data).var(axis=0)
-    #column_min = pd.DataFrame(data).min(axis=0)
-    #column_max = pd.DataFrame(data).max(axis=0)
-    #column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
-    #column_iqr = iqr(data, axis=0)
+    # column_min = pd.DataFrame(data).min(axis=0)
+    # column_max = pd.DataFrame(data).max(axis=0)
+    # column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
+    # column_iqr = iqr(data, axis=0)
     column_ara = average_resultant_acceleration(data)
     column_skewness = skew(data, axis=0)
     column_kurtosis = kurtosis(data, axis=0)
