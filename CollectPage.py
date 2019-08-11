@@ -64,7 +64,7 @@ class CollectPage(tk.Frame):
         data4 = data3.replace('[', '')
         phone_data = data4.replace(']', '').split(',')
 
-        if len(phone_data) != 45:
+        if len(phone_data) != 50:
             print("current: " + self.currentActivity)
             print(phone_data)
 
@@ -101,8 +101,14 @@ class CollectPage(tk.Frame):
                 phone_data[0] = re.sub('[a-zA-Z_]', '', phone_data[0])
                 phone_data[-1] = re.sub('[a-zA-Z_]', '', phone_data[-1])
 
-                float_data = [float(i) for i in phone_data]
-                separated = [float_data[x:x + 9] for x in range(0, len(float_data), 9)]
+                for i in range(0,len(phone_data)):
+                    if i%10 != 0:
+                        phone_data[i] = float(phone_data[i])
+                        #phone_data[i].astype(float32)
+
+                #float_data = [float(i) for i in phone_data]
+                separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
+
                 for row in separated:
                     row.append(self.currentActivity)
 
@@ -131,7 +137,7 @@ class CollectPage(tk.Frame):
         print(csvName)
         with open(csvName, 'w', newline='') as writeFile:
             writer = csv.writer(writeFile)
-            line = [["accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
+            line = [["time","accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
             writer.writerows(line)
             print("write")
         writeFile.close()

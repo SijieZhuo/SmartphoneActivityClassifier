@@ -7,6 +7,7 @@ from scipy.fftpack import fft
 from scipy.stats import skew, kurtosis, iqr
 import _thread
 from tsfresh import extract_features
+import tsfresh
 import Main
 
 
@@ -24,7 +25,7 @@ class FeatureExtractionPage(tk.Frame):
 
 def analyse_data():
     filename_list = []
-
+    # get file name
     for file in os.listdir("Data/DataForAnalysation"):
         if file.endswith(".csv"):
             path = os.getcwd() + "\Data\DataForAnalysation\\" + file
@@ -33,14 +34,18 @@ def analyse_data():
 
     result_data = None
     result_target = None
+    count = 0
 
     for filepath in filename_list:
         file = pd.read_csv(filepath)
 
+        file["id"] = count
+        count = count + 1
+
         activity = get_target((file))[1]
-        sectioned_data = sliding_window(pd.DataFrame(get_data(file)), Main.window_size, int(Main.window_size / 2))
+        sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
         for window in sectioned_data:
-            data = feature_extraction(window)
+            data = feature_extraction2(window)
 
             with open("Data/TrainingSet/data.csv", 'a', newline='') as writeDataFile:
                 writer = csv.writer(writeDataFile)
@@ -76,14 +81,31 @@ def get_data(inputdata):
 def get_target(inputdata):
     return inputdata[inputdata.columns[9]]
 
+
 def feature_extraction2(data):
-    return extract_features(pd.DataFrame(data), column_id='id', column_sort='time')
+    df = pd.DataFrame(data)
+    df.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity", "id"]
+    df = df[["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
+
+    df = df.drop(columns=["activity"])
+    df = df.astype({"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+                    "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+
+    result = extract_features(df, column_id='id', column_sort='time')
+    print(result.values)
+    with open("Data/TrainingSet/fe.csv", 'w', newline='') as writeDataFile:
+        writer = csv.writer(writeDataFile)
+        writer.writerows([result])
+        writer.writerows(result.values)
+    writeDataFile.close()
+    print("done")
+    return
 
 
-def feature_extraction(data):
+def feature_extraction1(data):
     column_mean = pd.DataFrame(data).mean(axis=0)
-    #column_sd = pd.DataFrame(data).std(axis=0)
-    #column_varience = pd.DataFrame(data).var(axis=0)
+    # column_sd = pd.DataFrame(data).std(axis=0)
+    # column_varience = pd.DataFrame(data).var(axis=0)
     # column_min = pd.DataFrame(data).min(axis=0)
     # column_max = pd.DataFrame(data).max(axis=0)
     # column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
