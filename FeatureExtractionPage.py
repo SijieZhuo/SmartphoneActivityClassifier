@@ -8,6 +8,11 @@ from scipy.stats import skew, kurtosis, iqr
 import _thread
 from tsfresh import extract_features
 import tsfresh
+import tsfresh.feature_selection
+from tsfresh.feature_selection.relevance import calculate_relevance_table
+from tsfresh import extract_features, extract_relevant_features,select_features
+from tsfresh.utilities.dataframe_functions import  impute
+from tsfresh.feature_extraction import ComprehensiveFCParameters
 import Main
 
 
@@ -21,6 +26,9 @@ class FeatureExtractionPage(tk.Frame):
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
+
+        selection_btn = tk.Button(self, text="selection", command=lambda: feature_selection())
+        selection_btn.pack()
 
 
 def analyse_data():
@@ -43,18 +51,21 @@ def analyse_data():
         count = count + 1
 
         activity = get_target((file))[1]
+        print(activity)
         sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
+
         for window in sectioned_data:
-            data = feature_extraction2(window)
+            data = feature_extraction3(window)
+            #data = np.insert(data.values, 0, count)
 
             with open("Data/TrainingSet/data.csv", 'a', newline='') as writeDataFile:
                 writer = csv.writer(writeDataFile)
-                writer.writerows([data])
+                writer.writerows(data.values)
             writeDataFile.close()
 
             with open("Data/TrainingSet/target.csv", 'a', newline='') as writeTargetFile:
                 writer = csv.writer(writeTargetFile)
-                writer.writerows([[activity]])
+                writer.writerows([[count, activity]])
             writeTargetFile.close()
 
         print("write")
@@ -79,7 +90,76 @@ def get_data(inputdata):
 
 
 def get_target(inputdata):
-    return inputdata[inputdata.columns[9]]
+    return inputdata[inputdata.columns[10]]
+
+
+def feature_selection():
+    #data = pd.read_csv("Data/TrainingSet/data.csv")
+    #target = pd.read_csv("Data/TrainingSet/target.csv")
+    #print(target['target'])
+    #relevance_table = calculate_relevance_table(data, target['target'])
+    #relevant_features = relevance_table[relevance_table.relevant].feature
+
+    #print(relevance_table)
+    #print(data.loc[:, relevant_features])
+    featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
+    #print(featureCSV)
+    features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
+    print(features)
+
+    print(ComprehensiveFCParameters())
+
+    #with open("Data/TrainingSet/features.csv", 'w', newline='') as writeTargetFile:
+    #    writer = csv.writer(writeTargetFile)
+     #   writer.writerows([relevant_features])
+   # writeTargetFile.close()
+
+    '''
+    with open("Data/TrainingSet/sf2.csv", 'w', newline='') as writeTargetFile:
+        writer = csv.writer(writeTargetFile)
+        writer.writerows([relevance_table])
+        writer.writerows(relevance_table.values)
+    writeTargetFile.close()
+    '''
+
+
+    return
+
+
+def feature_extraction3(data):
+    df = pd.DataFrame(data)
+    df.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity", "id"]
+    df = df[["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
+
+    featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
+    features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
+
+    df2 = df.drop(columns=["activity"])
+    df2 = df2.astype(
+        {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+         "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+
+    # print(df2)
+
+    # result = tsfresh.feature_selection.relevance.calculate_relevance_table(df2, df["activity"])
+
+    result = extract_features(df2, column_id='id', column_sort='time',
+                              default_fc_parameters=features
+                              )
+
+    if not os.path.exists("Data/TrainingSet/data.csv"):
+        with open("Data/TrainingSet/data.csv", 'w', newline='') as writeTargetFile:
+            writer = csv.writer(writeTargetFile)
+            writer.writerows([result])
+        writeTargetFile.close()
+    if not os.path.exists("Data/TrainingSet/target.csv"):
+        with open("Data/TrainingSet/target.csv", 'w', newline='') as writeTargetFile:
+            writer = csv.writer(writeTargetFile)
+            writer.writerows([['index', 'target']])
+        writeTargetFile.close()
+
+    print(result)
+    return result
 
 
 def feature_extraction2(data):
@@ -87,19 +167,34 @@ def feature_extraction2(data):
     df.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity", "id"]
     df = df[["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
 
-    df = df.drop(columns=["activity"])
-    df = df.astype({"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
-                    "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+    df2 = df.drop(columns=["activity"])
+    df2 = df2.astype(
+        {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+         "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
 
-    result = extract_features(df, column_id='id', column_sort='time')
-    print(result.values)
-    with open("Data/TrainingSet/fe.csv", 'w', newline='') as writeDataFile:
-        writer = csv.writer(writeDataFile)
-        writer.writerows([result])
-        writer.writerows(result.values)
-    writeDataFile.close()
-    print("done")
-    return
+    #print(df2)
+
+    # result = tsfresh.feature_selection.relevance.calculate_relevance_table(df2, df["activity"])
+
+    result = extract_features(df2, column_id='id', column_sort='time', impute_function=impute,
+                              default_fc_parameters=ComprehensiveFCParameters(),
+                              n_jobs=8,show_warnings=False,profile=False)
+
+    if not os.path.exists("Data/TrainingSet/data.csv"):
+        with open("Data/TrainingSet/data.csv", 'w', newline='') as writeTargetFile:
+            writer = csv.writer(writeTargetFile)
+            writer.writerows([result])
+        writeTargetFile.close()
+    if not os.path.exists("Data/TrainingSet/target.csv"):
+        with open("Data/TrainingSet/target.csv", 'w', newline='') as writeTargetFile:
+            writer = csv.writer(writeTargetFile)
+            writer.writerows([['index','target']])
+        writeTargetFile.close()
+
+
+
+    print(result)
+    return result
 
 
 def feature_extraction1(data):
