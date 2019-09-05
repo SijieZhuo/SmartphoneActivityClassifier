@@ -77,7 +77,6 @@ def combine_data():
             index = index + 1
 
 
-
 def combined2():
     df = pd.read_csv("Data/TrainingSet/dataz.csv")
     df.columns = ["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
@@ -95,13 +94,13 @@ def combined2():
                               default_fc_parameters=ComprehensiveFCParameters(),
                               n_jobs=8, show_warnings=False, profile=False)
 
-
     with open("Data/TrainingSet/datay.csv", 'w', newline='') as writeTargetFile:
         writer = csv.writer(writeTargetFile)
         writer.writerows([result.columns])
         writer.writerows(result.values)
     writeTargetFile.close()
     print("done")
+
 
 def analyse_data():
     filename_list = []
@@ -147,7 +146,7 @@ def analyse_data():
 def feature_selection():
     data = pd.read_csv("Data/TrainingSet/datay.csv")
     target = pd.read_csv("Data/TrainingSet/targetz.csv")
-    #target.columns = ['index', 'target']
+    # target.columns = ['index', 'target']
     print(target['target'])
     relevance_table = calculate_relevance_table(data, target['target'], fdr_level=0.0001)
     relevant_features = relevance_table[relevance_table.relevant].feature
@@ -162,24 +161,61 @@ def feature_selection():
 
 def test_selected():
     featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
+
     print(len(featureCSV.columns))
 
-    '''
-    print(relevance_table)
-    print(data.loc[:, relevant_features])
-    featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
-    #print(featureCSV)
     features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
     print(features)
+    print(type(features))
+    print(features.keys())
 
-    print(ComprehensiveFCParameters())
+    df = pd.read_csv("Data/TrainingSet/dataz.csv")
+    df.columns = ["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
 
-    with open("Data/TrainingSet/sf2.csv", 'w', newline='') as writeTargetFile:
+    result = extract_features(df[['id', 'time', 'accX']], column_id='id', column_sort='time', impute_function=impute,
+                              default_fc_parameters=features.get('accX'),
+                              n_jobs=8, show_warnings=False, profile=False)
+    for datatype in ("accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ"):
+        r = extract_features(df[['id', 'time', datatype]], column_id='id', column_sort='time', impute_function=impute,
+                             default_fc_parameters=features.get(datatype),
+                             n_jobs=8, show_warnings=False, profile=False)
+
+        result = pd.merge(result, r, left_index=True, right_index=True)
+    print(result)
+
+    with open("Data/TrainingSet/final.csv", 'w', newline='') as writeTargetFile:
         writer = csv.writer(writeTargetFile)
-        writer.writerows([relevance_table])
-        writer.writerows(relevance_table.values)
+        writer.writerows(result.values)
     writeTargetFile.close()
-    '''
+
+
+def feature_extraction4(data):
+
+    featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
+    features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
+
+    #df = pd.DataFrame(data)
+    indexColumn = np.array([[0]] * len(data))
+    df = np.append(indexColumn, data, axis=1)
+    df = pd.DataFrame(df)
+    df.columns = ["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ"]
+    print(df)
+    df = df.astype(
+        {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+         "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+
+    result = extract_features(df[['id','time', 'accX']], column_id='id', column_sort='time', impute_function=impute,
+                              default_fc_parameters=features.get('accX'),
+                              n_jobs=8, show_warnings=False, profile=False)
+    for datatype in ("accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ"):
+        r = extract_features(df[['id','time', datatype]], column_id='id', column_sort='time', impute_function=impute,
+                              default_fc_parameters=features.get(datatype),
+                              n_jobs=8, show_warnings=False, profile=False)
+
+        result = pd.merge(result,r,left_index=True,right_index=True)
+    print(result)
+    return result
+
 
 
 def feature_extraction3(data):
@@ -221,7 +257,7 @@ def feature_extraction3(data):
 def feature_extraction2(data):
     df = pd.DataFrame(data)
     df.columns = ["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
-    #df = df[["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
+    # df = df[["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]]
 
     df2 = df.drop(columns=["activity"])
     df2 = df2.astype(

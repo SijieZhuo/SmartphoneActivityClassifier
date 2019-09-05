@@ -39,7 +39,7 @@ class ClassifyPage(tk.Frame):
 
         self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
 
-        classify_btn = tk.Button(self, text="Classify", command=lambda: classify_btn_hit(self))
+        classify_btn = tk.Button(self, text="Classify", command=lambda: self.classify_btn_hit())
         classify_btn.pack()
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
@@ -75,8 +75,6 @@ class ClassifyPage(tk.Frame):
         writeDataFile.close()
 
 
-
-
     def update_data(self, data):
 
         if self.is_classifying is True:
@@ -89,30 +87,37 @@ class ClassifyPage(tk.Frame):
                 for i in range(0, len(phone_data)):
                     if i % 10 != 0:
                         phone_data[i] = float(phone_data[i])
-                        classify_data.append(float(phone_data[i]))
+                        #classify_data.append(float(phone_data[i]))
                         # phone_data[i].astype(float32)
 
                 # float_data = [float(i) for i in phone_data]
-                separated = [classify_data[x:x + 9] for x in range(0, len(classify_data), 9)]
+                separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
                 print(separated)
                 for row in separated:
                     self.data_window.append(row)
 
                 if len(self.data_window) == Main.window_size:
-                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction1(
-                        np.array(self.data_window))
+                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction4(
+                        self.data_window)
 
                     del self.data_window[:(int(Main.window_size / 2))]
-
-            self.classify_window(self.current_processed_data.data)
+                #print(self.current_processed_data.data)
+                    self.classify_window(self.current_processed_data.data)
 
     def classify_window(self, data):
         if self.is_classifying is True:
-            print([data])
+            print(data)
             print([[data]])
 
             prediction = self.clf.predict(data)
             print(prediction)
+
+    def classify_btn_hit(self):
+        data_file = pd.read_csv(self.data_file_path.get())
+        target_file = pd.read_csv(self.target_file_path.get())
+        target_file.columns = ['index','target']
+        self.clf.fit(data_file.values, target_file['target'])
+        self.is_classifying = True
 
 
 def browse_btn_hit(folder_path):
@@ -121,15 +126,6 @@ def browse_btn_hit(folder_path):
     filename = filedialog.askopenfilename()
     folder_path.set(filename)
     print(filename)
-
-
-def classify_btn_hit(page):
-    data_file = pd.read_csv(page.data_file_path.get())
-    target_file = pd.read_csv(page.target_file_path.get())
-    page.is_classifying = True
-    page.clf.fit(data_file.values, target_file.values.ravel())
-
-
 
 
 class DataWindow(object):
