@@ -84,21 +84,34 @@ class ClassifyPage(tk.Frame):
             data3 = data2.replace(' ', '')
             data4 = data3.replace('[', '')
             phone_data = data4.replace(']', '').split(',')
-            if len(phone_data) == 45:
-                float_data = [float(i) for i in phone_data]
-                separated = [float_data[x:x + 9] for x in range(0, len(float_data), 9)]
+            classify_data = []
+            if len(phone_data) == 50:
+                for i in range(0, len(phone_data)):
+                    if i % 10 != 0:
+                        phone_data[i] = float(phone_data[i])
+                        classify_data.append(float(phone_data[i]))
+                        # phone_data[i].astype(float32)
 
+                # float_data = [float(i) for i in phone_data]
+                separated = [classify_data[x:x + 9] for x in range(0, len(classify_data), 9)]
+                print(separated)
                 for row in separated:
                     self.data_window.append(row)
 
                 if len(self.data_window) == Main.window_size:
-                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction(
+                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction1(
                         np.array(self.data_window))
+
                     del self.data_window[:(int(Main.window_size / 2))]
+
+            self.classify_window(self.current_processed_data.data)
 
     def classify_window(self, data):
         if self.is_classifying is True:
-            prediction = self.clf.predict([data])
+            print([data])
+            print([[data]])
+
+            prediction = self.clf.predict(data)
             print(prediction)
 
 
@@ -115,6 +128,8 @@ def classify_btn_hit(page):
     target_file = pd.read_csv(page.target_file_path.get())
     page.is_classifying = True
     page.clf.fit(data_file.values, target_file.values.ravel())
+
+
 
 
 class DataWindow(object):
