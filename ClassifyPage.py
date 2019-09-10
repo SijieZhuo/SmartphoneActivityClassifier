@@ -8,6 +8,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 import seaborn as sns
+from collections import OrderedDict
 
 
 class ClassifyPage(tk.Frame):
@@ -122,10 +123,18 @@ class ClassifyPage(tk.Frame):
     def classify_window(self, data):
         if self.is_classifying is True:
             if self.method_text.get() == 'tsfresh':
-                prediction = self.clf.predict(data.values)
+                data_to_predict = data.values
             elif self.method_text.get() == 'Time/Frequency':
-                prediction = self.clf.predict([data])
+                data_to_predict = [data]
+
+            prediction = self.clf.predict(data_to_predict)
             print(prediction)
+            probability = self.clf.predict_proba(data_to_predict)
+            prediction_prob = {}
+            for i in range(0, len(probability[0])):
+                prediction_prob[self.clf.classes_[i]] = probability[0][i]
+            sorted_prob = sorted(prediction_prob.items(), key=lambda kv: kv[1], reverse=True)
+            print(sorted_prob)
 
     def classify_btn_hit(self):
         data_file = pd.read_csv(self.data_file_path.get())
