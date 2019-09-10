@@ -14,6 +14,7 @@ from tsfresh import extract_features, extract_relevant_features, select_features
 from tsfresh.utilities.dataframe_functions import impute
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 import Main
+import matplotlib.pyplot as plt
 
 
 class FeatureExtractionPage(tk.Frame):
@@ -24,10 +25,10 @@ class FeatureExtractionPage(tk.Frame):
         # flow of ts feature extraction is : combine_data()  ->  feature_extracton_ts()  -> feature_selection()
         #  -> generate_final_features_ts()
 
-        combine_btn = tk.Button(self, text="combine", command=lambda: combine_data())
+        combine_btn = tk.Button(self, text="combine", command=lambda: time_frequency_feature_extraction())
         combine_btn.pack()
 
-        analyse_btn = tk.Button(self, text="Analyse", command=lambda: feature_extraction_ts())
+        analyse_btn = tk.Button(self, text="Analyse", command=lambda: correlation_table())
         analyse_btn.pack()
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
@@ -175,23 +176,76 @@ def ts_feature_extraction():
     feature_selection()
     generate_final_features_ts()
 
+
+# calculate the features in the selected folder and save the extracted file in TrainingSet
+def time_frequency_feature_extraction():
+
+    filename_list = []
+    # get file name
+    for file in os.listdir("Data/DataForAnalysation"):
+        if file.endswith(".csv"):
+            path = os.getcwd() + "\Data\DataForAnalysation\\" + file
+            filename_list.append(path)
+
+    for filepath in filename_list:
+        print(filepath)
+        file = pd.read_csv(filepath)
+        file.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
+
+        activity = get_target(file)[1]
+        del file['time']
+        del file['activity']
+        file = file.astype(
+            {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+             "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+
+        sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
+
+        for window in sectioned_data:
+            window = pd.DataFrame(window)
+            window.columns = ["accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ"]
+            window = window.astype(
+                {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+                 "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+            result = feature_extraction1(window)
+
+            with open("Data/TrainingSet/data_tf.csv", 'a', newline='') as writeTargetFile:
+                writer = csv.writer(writeTargetFile)
+                writer.writerows([result])
+            writeTargetFile.close()
+
+            with open("Data/TrainingSet/target_tf.csv", 'a', newline='') as writeTargetFile:
+                writer = csv.writer(writeTargetFile)
+                writer.writerows([[activity]])
+            writeTargetFile.close()
+
+
+def correlation_table():
+    data = pd.read_csv("Data/TrainingSet/data_tf.csv")
+    plt.matshow(data.corr())
+    plt.show()
+
+
+# manually calculate time and frequency domain features
 def feature_extraction1(data):
-    column_mean = pd.DataFrame(data).mean(axis=0)
-    # column_sd = pd.DataFrame(data).std(axis=0)
-    # column_varience = pd.DataFrame(data).var(axis=0)
-    # column_min = pd.DataFrame(data).min(axis=0)
-    # column_max = pd.DataFrame(data).max(axis=0)
-    # column_mean_absolute_deviation = pd.DataFrame(data).mad(axis=0)
-    # column_iqr = iqr(data, axis=0)
-    column_ara = average_resultant_acceleration(data)
-    # column_skewness = skew(data, axis=0)
-    column_skewness = pd.DataFrame(data).skew(axis=0)
+    data = pd.DataFrame(data)
+
+    column_mean = data.mean(axis=0)
+    #column_sd = pd.DataFrame(data).std(axis=0)
+    #column_varience = data.var(axis=0)
+   # column_min = data.min(axis=0)
+   # column_max = data.max(axis=0)
+   # column_mean_absolute_deviation = data.mad(axis=0)
+    #column_iqr = iqr(data, axis=0)
+    column_ara = average_resultant_acceleration(data.values)
+    column_skewness = data.skew(axis=0)
     column_kurtosis = kurtosis(data, axis=0)
-    column_sma = sma(data)
+    column_sma = sma(data.values)
 
     features = np.concatenate(
         (column_mean,
          column_ara, column_skewness, column_kurtosis, column_sma))
+    #print(pd.DataFrame(features))
     return features
 
 
@@ -199,6 +253,7 @@ def average_resultant_acceleration(data):
     acc_sum = 0.0
     gyro_sum = 0.0
     magnet_sum = 0.0
+
     for row in data:
         acc = np.math.sqrt(row[0] ** 2 + row[1] ** 2 + row[2] ** 2)
         gyro = np.math.sqrt(row[3] ** 2 + row[4] ** 2 + row[5] ** 2)
@@ -254,4 +309,4 @@ def get_data(inputdata):
 
 
 def get_target(inputdata):
-    return inputdata[inputdata.columns[10]]
+    return inputdata[inputdata.columns[-1]]

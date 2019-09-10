@@ -24,6 +24,9 @@ class ClassifyPage(tk.Frame):
         self.current_processed_data.bind_to(self.classify_window)
         self.is_classifying = False
 
+        self.method_text = tk.StringVar()
+        self.method_text.set("Time/Frequency")
+
         self.data_file_path = tk.StringVar()
         data_label = tk.Label(self, textvariable=self.data_file_path)
         data_label.pack()
@@ -39,6 +42,9 @@ class ClassifyPage(tk.Frame):
 
         self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
 
+        self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method())
+        self.method_btn.pack()
+
         classify_btn = tk.Button(self, text="Classify", command=lambda: self.classify_btn_hit())
         classify_btn.pack()
 
@@ -50,10 +56,10 @@ class ClassifyPage(tk.Frame):
 
     def check_data(self):
         data_file = pd.read_csv(self.data_file_path.get())
-        target_file = pd.read_csv(self.target_file_path.get())
+        #target_file = pd.read_csv(self.target_file_path.get())
 
         corr = data_file.corr()
-        #corr = corr.values
+        # corr = corr.values
         print(corr)
 
         fig = plt.figure()
@@ -74,7 +80,6 @@ class ClassifyPage(tk.Frame):
             writer.writerows(corr)
         writeDataFile.close()
 
-
     def update_data(self, data):
 
         if self.is_classifying is True:
@@ -87,37 +92,59 @@ class ClassifyPage(tk.Frame):
                 for i in range(0, len(phone_data)):
                     if i % 10 != 0:
                         phone_data[i] = float(phone_data[i])
-                        #classify_data.append(float(phone_data[i]))
+                        # classify_data.append(float(phone_data[i]))
                         # phone_data[i].astype(float32)
 
                 # float_data = [float(i) for i in phone_data]
-                separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
-                print(separated)
-                for row in separated:
-                    self.data_window.append(row)
+                if self.method_text.get() == 'tsfresh':
+                    print("tsfresh")
+                    separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
+                    for row in separated:
+                        self.data_window.append(row)
+                        if len(self.data_window) == Main.window_size:
+                            self.current_processed_data.data = FeatureExtractionPage.feature_extraction_ts_realtime(
+                                self.data_window)
 
-                if len(self.data_window) == Main.window_size:
-                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction_ts_realtime(
-                        self.data_window)
+                            del self.data_window[:(int(Main.window_size / 2))]
 
-                    del self.data_window[:(int(Main.window_size / 2))]
-                #print(self.current_processed_data.data)
-                    self.classify_window(self.current_processed_data.data)
+                            self.classify_window(self.current_processed_data.data)
+
+                elif self.method_text.get() == 'Time/Frequency':
+                    separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
+                    for row in separated:
+                        row = row[1:]
+                        self.data_window.append(row)
+                        if len(self.data_window) == Main.window_size:
+                            self.current_processed_data.data = FeatureExtractionPage.feature_extraction1(self.data_window)
+                            del self.data_window[:(int(Main.window_size / 2))]
+                            self.classify_window(self.current_processed_data.data)
 
     def classify_window(self, data):
         if self.is_classifying is True:
-            print(data)
-            print([[data]])
-
-            prediction = self.clf.predict(data)
+            if self.method_text.get() == 'tsfresh':
+                prediction = self.clf.predict(data.values)
+            elif self.method_text.get() == 'Time/Frequency':
+                prediction = self.clf.predict([data])
             print(prediction)
 
     def classify_btn_hit(self):
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
-        target_file.columns = ['index','target']
-        self.clf.fit(data_file.values, target_file['target'])
+
+        if self.method_text.get() == 'tsfresh':
+            target_file.columns = ['index', 'target']
+            self.clf.fit(data_file.values, target_file['target'])
+
+        elif self.method_text.get() == 'Time/Frequency':
+            self.clf.fit(data_file.values, target_file)
+
         self.is_classifying = True
+
+    def select_classify_method(self):
+        if self.method_text.get() == "Time/Frequency":
+            self.method_text.set("tsfresh")
+        elif self.method_text.get() == "tsfresh":
+            self.method_text.set("Time/Frequency")
 
 
 def browse_btn_hit(folder_path):
