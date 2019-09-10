@@ -97,7 +97,7 @@ class ClassifyPage(tk.Frame):
                     self.data_window.append(row)
 
                 if len(self.data_window) == Main.window_size:
-                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction4(
+                    self.current_processed_data.data = FeatureExtractionPage.feature_extraction_ts_realtime(
                         self.data_window)
 
                     del self.data_window[:(int(Main.window_size / 2))]
