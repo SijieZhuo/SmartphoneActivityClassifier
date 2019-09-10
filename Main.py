@@ -6,8 +6,9 @@ import CollectPage
 import FeatureExtractionPage
 import ClassifyPage
 
-#sampling frequency is 5hz
+# sampling frequency is 5hz
 window_size = 100
+
 
 class ClassifierApp(tk.Tk):
 
@@ -35,7 +36,6 @@ class ClassifierApp(tk.Tk):
 
         self.current_data = PhoneData()
         self.current_data.data = []
-
 
         self.frames = {}
         for F in (StartPage.StartPage, CollectPage.CollectPage, FeatureExtractionPage.FeatureExtractionPage,

@@ -1,20 +1,18 @@
 import csv
 import os
 import tkinter as tk
-import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
-from scipy.fftpack import fft
-from scipy.stats import skew, kurtosis, iqr
-import _thread
-from tsfresh import extract_features
+import pandas as pd
 import tsfresh
 import tsfresh.feature_selection
-from tsfresh.feature_selection.relevance import calculate_relevance_table
-from tsfresh import extract_features, extract_relevant_features, select_features
-from tsfresh.utilities.dataframe_functions import impute
+from scipy.stats import kurtosis
+from tsfresh import extract_features
 from tsfresh.feature_extraction import ComprehensiveFCParameters
+from tsfresh.feature_selection.relevance import calculate_relevance_table
+from tsfresh.utilities.dataframe_functions import impute
+
 import Main
-import matplotlib.pyplot as plt
 
 
 class FeatureExtractionPage(tk.Frame):
@@ -179,7 +177,6 @@ def ts_feature_extraction():
 
 # calculate the features in the selected folder and save the extracted file in TrainingSet
 def time_frequency_feature_extraction():
-
     filename_list = []
     # get file name
     for file in os.listdir("Data/DataForAnalysation"):
@@ -231,12 +228,12 @@ def feature_extraction1(data):
     data = pd.DataFrame(data)
 
     column_mean = data.mean(axis=0)
-    #column_sd = pd.DataFrame(data).std(axis=0)
-    #column_varience = data.var(axis=0)
-   # column_min = data.min(axis=0)
-   # column_max = data.max(axis=0)
-   # column_mean_absolute_deviation = data.mad(axis=0)
-    #column_iqr = iqr(data, axis=0)
+    # column_sd = pd.DataFrame(data).std(axis=0)
+    # column_varience = data.var(axis=0)
+    # column_min = data.min(axis=0)
+    # column_max = data.max(axis=0)
+    # column_mean_absolute_deviation = data.mad(axis=0)
+    # column_iqr = iqr(data, axis=0)
     column_ara = average_resultant_acceleration(data.values)
     column_skewness = data.skew(axis=0)
     column_kurtosis = kurtosis(data, axis=0)
@@ -245,7 +242,7 @@ def feature_extraction1(data):
     features = np.concatenate(
         (column_mean,
          column_ara, column_skewness, column_kurtosis, column_sma))
-    #print(pd.DataFrame(features))
+    # print(pd.DataFrame(features))
     return features
 
 

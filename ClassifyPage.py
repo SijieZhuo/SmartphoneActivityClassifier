@@ -1,14 +1,18 @@
+import csv
 import tkinter as tk
 from tkinter import filedialog
-from sklearn.neural_network import MLPClassifier
-import pandas as pd
-import Main
-import FeatureExtractionPage
-import numpy as np
-import csv
+
 import matplotlib.pyplot as plt
-import seaborn as sns
-from collections import OrderedDict
+import numpy as np
+import pandas as pd
+from sklearn import neighbors
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.neural_network import MLPClassifier
+
+import FeatureExtractionPage
+import Main
 
 
 class ClassifyPage(tk.Frame):
@@ -42,6 +46,9 @@ class ClassifyPage(tk.Frame):
         target_path_btn.pack()
 
         self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+        self.clf2 = RandomForestClassifier(n_estimators=10, max_depth=None, min_samples_split=4, random_state=0)
+        self.clf3 = neighbors.KNeighborsClassifier(15, weights='uniform')
+        self.clf4 = svm.SVC(gamma='scale')
 
         self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method())
         self.method_btn.pack()
@@ -57,7 +64,7 @@ class ClassifyPage(tk.Frame):
 
     def check_data(self):
         data_file = pd.read_csv(self.data_file_path.get())
-        #target_file = pd.read_csv(self.target_file_path.get())
+        # target_file = pd.read_csv(self.target_file_path.get())
 
         corr = data_file.corr()
         # corr = corr.values
@@ -116,7 +123,8 @@ class ClassifyPage(tk.Frame):
                         row = row[1:]
                         self.data_window.append(row)
                         if len(self.data_window) == Main.window_size:
-                            self.current_processed_data.data = FeatureExtractionPage.feature_extraction1(self.data_window)
+                            self.current_processed_data.data = FeatureExtractionPage.feature_extraction1(
+                                self.data_window)
                             del self.data_window[:(int(Main.window_size / 2))]
                             self.classify_window(self.current_processed_data.data)
 
@@ -127,12 +135,12 @@ class ClassifyPage(tk.Frame):
             elif self.method_text.get() == 'Time/Frequency':
                 data_to_predict = [data]
 
-            prediction = self.clf.predict(data_to_predict)
+            prediction = self.clf2.predict(data_to_predict)
             print(prediction)
-            probability = self.clf.predict_proba(data_to_predict)
+            probability = self.clf2.predict_proba(data_to_predict)
             prediction_prob = {}
             for i in range(0, len(probability[0])):
-                prediction_prob[self.clf.classes_[i]] = probability[0][i]
+                prediction_prob[self.clf2.classes_[i]] = probability[0][i]
             sorted_prob = sorted(prediction_prob.items(), key=lambda kv: kv[1], reverse=True)
             print(sorted_prob)
 
@@ -142,10 +150,40 @@ class ClassifyPage(tk.Frame):
 
         if self.method_text.get() == 'tsfresh':
             target_file.columns = ['index', 'target']
+
             self.clf.fit(data_file.values, target_file['target'])
+            scoresm = cross_val_score(self.clf, data_file.values, target_file['target'], cv=5)
+            print(scoresm.mean())
+
+            self.clf2.fit(data_file.values, target_file['target'])
+            scoresr = cross_val_score(self.clf2, data_file.values, target_file['target'], cv=5)
+            print(scoresr.mean())
+
+            self.clf3.fit(data_file.values, target_file['target'])
+            scoresr = cross_val_score(self.clf3, data_file.values, target_file['target'], cv=5)
+            print(scoresr.mean())
+
+            self.clf4.fit(data_file.values, target_file['target'])
+            scoresr = cross_val_score(self.clf4, data_file.values, target_file['target'], cv=5)
+            print(scoresr.mean())
 
         elif self.method_text.get() == 'Time/Frequency':
+
             self.clf.fit(data_file.values, target_file)
+            scoresm = cross_val_score(self.clf, data_file.values, target_file, cv=5)
+            print(scoresm.mean())
+
+            self.clf2.fit(data_file.values, target_file)
+            scoresr = cross_val_score(self.clf2, data_file.values, target_file, cv=5)
+            print(scoresr.mean())
+
+            self.clf3.fit(data_file.values, target_file)
+            scoresr = cross_val_score(self.clf3, data_file.values, target_file, cv=5)
+            print(scoresr.mean())
+
+            self.clf4.fit(data_file.values, target_file)
+            scoresr = cross_val_score(self.clf4, data_file.values, target_file, cv=5)
+            print(scoresr.mean())
 
         self.is_classifying = True
 
