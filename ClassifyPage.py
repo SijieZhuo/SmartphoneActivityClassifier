@@ -7,9 +7,10 @@ import numpy as np
 import pandas as pd
 from sklearn import neighbors
 from sklearn import svm
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, ExtraTreesClassifier, AdaBoostClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.neural_network import MLPClassifier
+
 
 import FeatureExtractionPage
 import Main
@@ -45,30 +46,37 @@ class ClassifyPage(tk.Frame):
                                     command=lambda: browse_btn_hit(self.target_file_path))
         target_path_btn.pack()
 
+        # ML models
         self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-        self.clf2 = RandomForestClassifier(n_estimators=10, max_depth=None, min_samples_split=4, random_state=0)
-        self.clf3 = neighbors.KNeighborsClassifier(15, weights='uniform')
+        self.clf2 = RandomForestClassifier(n_estimators=100, max_depth=None, min_samples_split=2, random_state=0)
+        self.clf3 = neighbors.KNeighborsClassifier(15, weights='distance')
         self.clf4 = svm.SVC(gamma='scale')
+        self.clf5 = BaggingClassifier(neighbors.KNeighborsClassifier(15, weights='distance'), max_samples=0.5, max_features=0.005)
+        self.clf6 = ExtraTreesClassifier(n_estimators=100, max_depth=None, min_samples_split=4, random_state=0)
+        self.clf7 = AdaBoostClassifier(n_estimators=100)
 
+        # selecting which method is used for classify data (time frequency / tsfresh)
         self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method())
         self.method_btn.pack()
 
+        # actual realtime classification
         classify_btn = tk.Button(self, text="Classify", command=lambda: self.classify_btn_hit())
         classify_btn.pack()
+
+        # ploting the coorelation graph for the features
+        coor_btn = tk.Button(self, text="Correlation plot", command=lambda: self.plot_coorelation())
+        coor_btn.pack()
+
+        # actual realtime classification
+        validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit())
+        validate_btn.pack()
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
 
-        test_btn = tk.Button(self, text="test", command=lambda: self.check_data())
-        test_btn.pack()
-
-    def check_data(self):
+    def plot_coorelation(self):
         data_file = pd.read_csv(self.data_file_path.get())
-        # target_file = pd.read_csv(self.target_file_path.get())
-
         corr = data_file.corr()
-        # corr = corr.values
-        print(corr)
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -82,11 +90,11 @@ class ClassifyPage(tk.Frame):
         ax.set_yticklabels(corr.columns)
         plt.show()
 
-        corr = corr.values
-        with open("Data/TrainingSet/corr.csv", 'w', newline='') as writeDataFile:
-            writer = csv.writer(writeDataFile)
-            writer.writerows(corr)
-        writeDataFile.close()
+        # corr = corr.values
+        # with open("Data/TrainingSet/corr.csv", 'w', newline='') as writeDataFile:
+        #   writer = csv.writer(writeDataFile)
+        #   writer.writerows(corr)
+        # writeDataFile.close()
 
     def update_data(self, data):
 
@@ -150,41 +158,10 @@ class ClassifyPage(tk.Frame):
 
         if self.method_text.get() == 'tsfresh':
             target_file.columns = ['index', 'target']
-
-            self.clf.fit(data_file.values, target_file['target'])
-            scoresm = cross_val_score(self.clf, data_file.values, target_file['target'], cv=5)
-            print(scoresm.mean())
-
-            self.clf2.fit(data_file.values, target_file['target'])
-            scoresr = cross_val_score(self.clf2, data_file.values, target_file['target'], cv=5)
-            print(scoresr.mean())
-
-            self.clf3.fit(data_file.values, target_file['target'])
-            scoresr = cross_val_score(self.clf3, data_file.values, target_file['target'], cv=5)
-            print(scoresr.mean())
-
-            self.clf4.fit(data_file.values, target_file['target'])
-            scoresr = cross_val_score(self.clf4, data_file.values, target_file['target'], cv=5)
-            print(scoresr.mean())
-
         elif self.method_text.get() == 'Time/Frequency':
+            target_file.columns = ['target']
 
-            self.clf.fit(data_file.values, target_file)
-            scoresm = cross_val_score(self.clf, data_file.values, target_file, cv=5)
-            print(scoresm.mean())
-
-            self.clf2.fit(data_file.values, target_file)
-            scoresr = cross_val_score(self.clf2, data_file.values, target_file, cv=5)
-            print(scoresr.mean())
-
-            self.clf3.fit(data_file.values, target_file)
-            scoresr = cross_val_score(self.clf3, data_file.values, target_file, cv=5)
-            print(scoresr.mean())
-
-            self.clf4.fit(data_file.values, target_file)
-            scoresr = cross_val_score(self.clf4, data_file.values, target_file, cv=5)
-            print(scoresr.mean())
-
+        self.clf2.fit(data_file.values, target_file['target'])
         self.is_classifying = True
 
     def select_classify_method(self):
@@ -192,6 +169,46 @@ class ClassifyPage(tk.Frame):
             self.method_text.set("tsfresh")
         elif self.method_text.get() == "tsfresh":
             self.method_text.set("Time/Frequency")
+
+    def validate_btn_hit(self):
+        data_file = pd.read_csv(self.data_file_path.get())
+        target_file = pd.read_csv(self.target_file_path.get())
+
+        if self.method_text.get() == 'tsfresh':
+            target_file.columns = ['index', 'target']
+        elif self.method_text.get() == 'Time/Frequency':
+            target_file.columns = ['target']
+
+        self.output_ml_validate_score(data_file.values, target_file['target'])
+
+    def output_ml_validate_score(self, data, target):
+        self.clf.fit(data, target)
+        scores = cross_val_score(self.clf, data, target, cv=5)
+        print("MLP: " + str(scores.mean()))
+
+        self.clf2.fit(data, target)
+        scores = cross_val_score(self.clf2, data, target, cv=5)
+        print("RF: " + str(scores.mean()))
+
+        self.clf3.fit(data, target)
+        scores = cross_val_score(self.clf3, data, target, cv=5)
+        print("KNN: " + str(scores.mean()))
+
+        self.clf4.fit(data, target)
+        scores = cross_val_score(self.clf4, data, target, cv=5)
+        print("SVM: " + str(scores.mean()))
+
+        self.clf5.fit(data, target)
+        scores = cross_val_score(self.clf5, data, target, cv=5)
+        print("Bagging: " + str(scores.mean()))
+
+        self.clf6.fit(data, target)
+        scores = cross_val_score(self.clf6, data, target, cv=5)
+        print("ExtraTree: " + str(scores.mean()))
+
+        self.clf7.fit(data, target)
+        scores = cross_val_score(self.clf7, data, target, cv=5)
+        print("AdaBoosting: " + str(scores.mean()))
 
 
 def browse_btn_hit(folder_path):

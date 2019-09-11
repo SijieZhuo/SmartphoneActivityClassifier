@@ -11,6 +11,7 @@ from tsfresh import extract_features
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.feature_selection.relevance import calculate_relevance_table
 from tsfresh.utilities.dataframe_functions import impute
+from scipy.signal import find_peaks
 
 import Main
 
@@ -23,20 +24,22 @@ class FeatureExtractionPage(tk.Frame):
         # flow of ts feature extraction is : combine_data()  ->  feature_extracton_ts()  -> feature_selection()
         #  -> generate_final_features_ts()
 
-        combine_btn = tk.Button(self, text="combine", command=lambda: time_frequency_feature_extraction())
-        combine_btn.pack()
+        # button for time frequency domain feature extraction
+        tf_btn = tk.Button(self, text="Time/Frequency extraction", command=lambda: time_frequency_feature_extraction())
+        tf_btn.pack()
 
-        analyse_btn = tk.Button(self, text="Analyse", command=lambda: correlation_table())
-        analyse_btn.pack()
+        # selection_btn = tk.Button(self, text="ts selection", command=lambda: feature_selection())
+        # selection_btn.pack()
+
+        # button for tsfresh feature extraction
+        ts_btn = tk.Button(self, text="generate ts features", command=lambda: ts_feature_extraction())
+        ts_btn.pack()
+
+        test_btn = tk.Button(self, text="test features", command=lambda: test_feature())
+        test_btn.pack()
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
-
-        selection_btn = tk.Button(self, text="selection", command=lambda: feature_selection())
-        selection_btn.pack()
-
-        ts_btn = tk.Button(self, text="generate ts features", command=lambda: ts_feature_extraction())
-        ts_btn.pack()
 
 
 # extract data from each of the csv files, and combine them into one big csv file
@@ -217,36 +220,35 @@ def time_frequency_feature_extraction():
             writeTargetFile.close()
 
 
-def correlation_table():
-    data = pd.read_csv("Data/TrainingSet/data_tf.csv")
-    plt.matshow(data.corr())
-    plt.show()
-
-
 # manually calculate time and frequency domain features
 def feature_extraction1(data):
     data = pd.DataFrame(data)
 
     column_mean = data.mean(axis=0)
-    # column_sd = pd.DataFrame(data).std(axis=0)
-    # column_varience = data.var(axis=0)
-    # column_min = data.min(axis=0)
-    # column_max = data.max(axis=0)
-    # column_mean_absolute_deviation = data.mad(axis=0)
-    # column_iqr = iqr(data, axis=0)
-    column_ara = average_resultant_acceleration(data.values)
+    column_sd = pd.DataFrame(data).std(axis=0)      # high coor
+    column_varience = data.var(axis=0)              # high coor
+    column_min = data.min(axis=0)                   # high coor
+    column_max = data.max(axis=0)                   # high coor
+    column_mean_absolute_deviation = data.mad(axis=0)   #high coor
+    # column_iqr = np.iqr(data.values, axis=0)
+    column_ara = average_resultant_acceleration(data)
     column_skewness = data.skew(axis=0)
     column_kurtosis = kurtosis(data, axis=0)
-    column_sma = sma(data.values)
+    column_sma = sma(data)
+    column_energy = energy(data)                    # high coor
+    column_zrc = zero_crossing_rate(data)           # currently reduce accuracy
+    column_no_peaks = no_peaks(data)
 
     features = np.concatenate(
-        (column_mean,
-         column_ara, column_skewness, column_kurtosis, column_sma))
-    # print(pd.DataFrame(features))
+        (column_mean, column_sd, column_varience,column_min, column_max, column_mean_absolute_deviation,
+         column_ara, column_skewness, column_kurtosis, column_sma, column_energy, column_zrc,  column_no_peaks))
     return features
 
 
+#  ======================= features =============================
+
 def average_resultant_acceleration(data):
+    data = data.values
     acc_sum = 0.0
     gyro_sum = 0.0
     magnet_sum = 0.0
@@ -267,7 +269,12 @@ def average_resultant_acceleration(data):
     return [average_acc, average_gyro, average_magnet]
 
 
+def energy(data):
+    return (data.values ** 2).sum(axis=0)
+
+
 def sma(data):
+    data = data.values
     acc_sum = 0.0
     gyro_sum = 0.0
     magnet_sum = 0.0
@@ -286,6 +293,26 @@ def sma(data):
 
     return [average_acc, average_gyro, average_magnet]
 
+
+def zero_crossing_rate(data):
+    zcr_list = []
+    for col in data.values.T:
+        col_zcr = ((col[:-1] * col[1:]) < 0).sum()
+        zcr_list.append(col_zcr)
+
+    return zcr_list
+
+
+def no_peaks(data):
+    list = []
+    for col in data.values.T:
+        peaks, _ = find_peaks(col)
+        list.append(len(peaks))
+
+    return list
+
+
+#  ===================== end of features ==========================
 
 def sliding_window(data, window_size, step_size):
     r = np.arange(len(data))
@@ -307,3 +334,27 @@ def get_data(inputdata):
 
 def get_target(inputdata):
     return inputdata[inputdata.columns[-1]]
+
+
+def test_feature():
+    file = pd.read_csv("Data/DataForAnalysation/2019_08_27_14_08_54_Sitting_Idle.csv")
+
+    file.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
+
+    del file['time']
+    del file['activity']
+    file = file.astype(
+        {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+         "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+
+    sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
+    for window in sectioned_data:
+        #window = pd.DataFrame(window)
+        output = no_peaks(window)
+        print(window.T[0])
+        plt.plot(window.T[0])
+        accx = window.T[0]
+        plt.plot(output[0], window.T[0][output[0]], "x")
+        #plt.plot(np.zeros_like(window[0]), "--", color="gray")
+        plt.show()
+        print(output)
