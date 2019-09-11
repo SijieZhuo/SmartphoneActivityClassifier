@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import tsfresh
 import tsfresh.feature_selection
-from scipy.stats import kurtosis
+from scipy.stats import kurtosis, iqr
 from tsfresh import extract_features
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.feature_selection.relevance import calculate_relevance_table
@@ -230,7 +230,7 @@ def feature_extraction1(data):
     column_min = data.min(axis=0)                   # high coor
     column_max = data.max(axis=0)                   # high coor
     column_mean_absolute_deviation = data.mad(axis=0)   #high coor
-    # column_iqr = np.iqr(data.values, axis=0)
+    column_iqr = iqr(data, axis=0)
     column_ara = average_resultant_acceleration(data)
     column_skewness = data.skew(axis=0)
     column_kurtosis = kurtosis(data, axis=0)
@@ -240,7 +240,7 @@ def feature_extraction1(data):
     column_no_peaks = no_peaks(data)
 
     features = np.concatenate(
-        (column_mean, column_sd, column_varience,column_min, column_max, column_mean_absolute_deviation,
+        (column_mean, column_sd, column_varience, column_min, column_max, column_mean_absolute_deviation, column_iqr,
          column_ara, column_skewness, column_kurtosis, column_sma, column_energy, column_zrc,  column_no_peaks))
     return features
 
@@ -337,7 +337,7 @@ def get_target(inputdata):
 
 
 def test_feature():
-    file = pd.read_csv("Data/DataForAnalysation/2019_08_27_14_08_54_Sitting_Idle.csv")
+    file = pd.read_csv("Data/DataForAnalysation/2019_09_10_12_09_33_Walking_Watch.csv")
 
     file.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
 
@@ -349,12 +349,7 @@ def test_feature():
 
     sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
     for window in sectioned_data:
-        #window = pd.DataFrame(window)
-        output = no_peaks(window)
-        print(window.T[0])
-        plt.plot(window.T[0])
-        accx = window.T[0]
-        plt.plot(output[0], window.T[0][output[0]], "x")
-        #plt.plot(np.zeros_like(window[0]), "--", color="gray")
-        plt.show()
+        window = pd.DataFrame(window)
+        output = iqr(window, axis=0)
+
         print(output)
