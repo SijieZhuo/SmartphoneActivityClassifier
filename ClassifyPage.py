@@ -8,8 +8,10 @@ import pandas as pd
 from sklearn import neighbors
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, ExtraTreesClassifier, AdaBoostClassifier
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.utils.multiclass import unique_labels
 
 
 import FeatureExtractionPage
@@ -67,9 +69,13 @@ class ClassifyPage(tk.Frame):
         coor_btn = tk.Button(self, text="Correlation plot", command=lambda: self.plot_coorelation())
         coor_btn.pack()
 
-        # actual realtime classification
+        # 5 fold cross validation for the classifiers
         validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit())
         validate_btn.pack()
+
+        # confusion matrix
+        confusion_btn = tk.Button(self, text="Confusion matrix", command=lambda: self.confusion_matrix())
+        confusion_btn.pack()
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
@@ -161,7 +167,7 @@ class ClassifyPage(tk.Frame):
         elif self.method_text.get() == 'Time/Frequency':
             target_file.columns = ['target']
 
-        self.clf2.fit(data_file.values, target_file['target'])
+        self.clf6.fit(data_file.values, target_file['target'])
         self.is_classifying = True
 
     def select_classify_method(self):
@@ -210,6 +216,22 @@ class ClassifyPage(tk.Frame):
         scores = cross_val_score(self.clf7, data, target, cv=5)
         print("AdaBoosting: " + str(scores.mean()))
 
+    def confusion_matrix(self):
+        data_file = pd.read_csv(self.data_file_path.get())
+        target_file = pd.read_csv(self.target_file_path.get())
+
+        # Split the data into a training set and a test set
+        X_train, X_test, y_train, y_test = train_test_split(data_file, target_file, random_state=0)
+        y_pred = self.clf6.fit(X_train, y_train).predict(X_test)
+
+        np.set_printoptions(precision=2)
+        target_file.columns = ['target']
+        # Plot normalized confusion matrix
+        plot_confusion_matrix(y_test, y_pred,target_file['target'], normalize=True,
+                              title='Normalized confusion matrix')
+
+        plt.show()
+
 
 def browse_btn_hit(folder_path):
     # Allow user to select a directory and store it in global var
@@ -217,6 +239,60 @@ def browse_btn_hit(folder_path):
     filename = filedialog.askopenfilename()
     folder_path.set(filename)
     print(filename)
+
+
+def plot_confusion_matrix(y_true, y_pred, classes,
+                          normalize=False,
+                          title=None,
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if not title:
+        if normalize:
+            title = 'Normalized confusion matrix'
+        else:
+            title = 'Confusion matrix, without normalization'
+
+    # Compute confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    # Only use the labels that appear in the data
+    classes = unique_labels(classes)
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    ax.figure.colorbar(im, ax=ax)
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=classes, yticklabels=classes,
+           title=title,
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+    return ax
 
 
 class DataWindow(object):
