@@ -4,9 +4,7 @@
     <list default="true" id="e43bbe29-2b8a-47ae-81cb-a6b775a5f54e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ClassifyPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ClassifyPage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CollectPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/CollectPage.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FeatureExtractionPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/FeatureExtractionPage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -40,7 +38,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CollectPage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1577">
+            <state relative-caret-position="361">
               <caret line="87" column="17" selection-start-line="87" selection-start-column="17" selection-end-line="87" selection-end-column="17" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
@@ -52,8 +50,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FeatureExtractionPage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4199">
-              <caret line="236" column="75" selection-start-line="236" selection-start-column="75" selection-end-line="236" selection-end-column="75" />
+            <state relative-caret-position="1159">
+              <caret line="73" lean-forward="true" selection-start-line="73" selection-end-line="73" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -64,8 +62,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ClassifyPage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="55" column="96" selection-start-line="55" selection-start-column="96" selection-end-line="55" selection-end-column="96" />
+            <state relative-caret-position="193">
+              <caret line="141" column="77" selection-start-line="137" selection-start-column="17" selection-end-line="141" selection-end-column="77" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -90,6 +88,8 @@
       <find>clf</find>
       <find>set</find>
       <find>def set</find>
+      <find>classes</find>
+      <find>read_csv</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -104,16 +104,15 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/Main.py" />
         <option value="$PROJECT_DIR$/CollectPage.py" />
-        <option value="$PROJECT_DIR$/FeatureExtractionPage.py" />
         <option value="$PROJECT_DIR$/ClassifyPage.py" />
+        <option value="$PROJECT_DIR$/FeatureExtractionPage.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="15" />
-    <option name="y" value="30" />
-    <option name="width" value="1890" />
-    <option name="height" value="1020" />
+    <option name="x" value="-12" />
+    <option name="width" value="981" />
+    <option name="height" value="1092" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -121,7 +120,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -133,6 +131,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -245,12 +244,12 @@
     <frame x="-7" y="-7" width="1295" height="735" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.30881163" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.31851253" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3294702" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4995958" visible="true" weight="0.34933776" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4995958" visible="true" weight="0.25993377" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39900663" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -330,6 +329,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/statsmodels/regression/linear_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="178">
+          <caret line="834" column="8" selection-start-line="834" selection-start-column="8" selection-end-line="834" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="95">
@@ -349,7 +355,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CollectPage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1577">
+        <state relative-caret-position="361">
           <caret line="87" column="17" selection-start-line="87" selection-start-column="17" selection-end-line="87" selection-end-column="17" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
@@ -359,8 +365,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/FeatureExtractionPage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4199">
-          <caret line="236" column="75" selection-start-line="236" selection-start-column="75" selection-end-line="236" selection-end-column="75" />
+        <state relative-caret-position="1159">
+          <caret line="73" lean-forward="true" selection-start-line="73" selection-end-line="73" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
@@ -369,8 +375,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ClassifyPage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="55" column="96" selection-start-line="55" selection-start-column="96" selection-end-line="55" selection-end-column="96" />
+        <state relative-caret-position="193">
+          <caret line="141" column="77" selection-start-line="137" selection-start-column="17" selection-end-line="141" selection-end-column="77" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>

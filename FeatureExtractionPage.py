@@ -54,6 +54,17 @@ def combine_data():
 
     index = 0
 
+    with open("Data/TrainingSet/data_all.csv", 'w', newline='') as writeDataFile:
+        writer = csv.writer(writeDataFile)
+        writer.writerows(
+            [['id', 'time', 'accX', 'accY', 'accZ', 'gyrX', 'gyrY', 'gyrZ', 'magX', 'magY', 'magZ', 'activity']])
+    writeDataFile.close()
+
+    with open("Data/TrainingSet/target_all.csv", 'w', newline='') as writeTargetFile:
+        writer = csv.writer(writeTargetFile)
+        writer.writerows([['index', 'activity']])
+    writeTargetFile.close()
+
     for filepath in filename_list:
         file = pd.read_csv(filepath)
 
@@ -105,7 +116,7 @@ def feature_extraction_ts():
 def feature_selection():
     data = pd.read_csv("Data/TrainingSet/data_ts.csv")
     target = pd.read_csv("Data/TrainingSet/target_all.csv")
-
+    target.columns = ['index', 'target']
     print(target['target'])
     relevance_table = calculate_relevance_table(data, target['target'], fdr_level=0.0001)
     relevant_features = relevance_table[relevance_table.relevant].feature
@@ -124,7 +135,7 @@ def generate_final_features_ts():
 
     features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
 
-    df = pd.read_csv("Data/TrainingSet/dataz.csv")
+    df = pd.read_csv("Data/TrainingSet/data_all.csv")
     df.columns = ["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
 
     result = extract_features(df[['id', 'time', 'accX']], column_id='id', column_sort='time', impute_function=impute,
@@ -141,6 +152,12 @@ def generate_final_features_ts():
     with open("Data/TrainingSet/data_ts_final.csv", 'w', newline='') as writeTargetFile:
         writer = csv.writer(writeTargetFile)
         writer.writerows(result.values)
+    writeTargetFile.close()
+
+    df = pd.read_csv("Data/TrainingSet/target_all.csv",skiprows=0)
+    with open("Data/TrainingSet/target_ts_final.csv", 'w', newline='') as writeTargetFile:
+        writer = csv.writer(writeTargetFile)
+        writer.writerows(df.values)
     writeTargetFile.close()
 
 
@@ -172,7 +189,7 @@ def feature_extraction_ts_realtime(data):
 
 
 def ts_feature_extraction():
-    combine_data()
+    # combine_data()
     feature_extraction_ts()
     feature_selection()
     generate_final_features_ts()
@@ -225,23 +242,44 @@ def feature_extraction1(data):
     data = pd.DataFrame(data)
 
     column_mean = data.mean(axis=0)
-    column_sd = pd.DataFrame(data).std(axis=0)      # high coor
-    column_varience = data.var(axis=0)              # high coor
-    column_min = data.min(axis=0)                   # high coor
-    column_max = data.max(axis=0)                   # high coor
-    column_mean_absolute_deviation = data.mad(axis=0)   #high coor
-    column_iqr = iqr(data, axis=0)
-    column_ara = average_resultant_acceleration(data)
+    column_mean = column_mean[:6]  # mean for megnetometer data was high corrolated
+
+    column_sd = pd.DataFrame(data).std(axis=0)
+
+    column_varience = data.var(axis=0)
+
+    column_min = data.min(axis=0)
+    column_min = column_min[:3]  # min for gyro and megnetometer data was high corrolated
+
+    column_max = data.max(axis=0)
+    column_max = column_max[:3]  # max for megnetometer data was high corrolated
+
+    # column_mean_absolute_deviation = data.mad(axis=0)   #high coor
+
+    # column_iqr = iqr(data, axis=0)                     # high coor
+
+    column_ara = average_resultant_acceleration(data)  # 3 columns
+    column_ara = column_ara[:1]  # ara  for gyro and megnetometer data was high corrolated
+
     column_skewness = data.skew(axis=0)
+
     column_kurtosis = kurtosis(data, axis=0)
-    column_sma = sma(data)                          # simple motion average
-    column_energy = energy(data)                    # high coor
-    column_zrc = zero_crossing_rate(data)           # currently reduce accuracy
+
+    column_sma = sma(data)  # simple motion average, 3 columns
+    column_sma = column_sma[:1]  # sma  for gyro and megnetometer data was high corrolated
+
+    column_energy = energy(data)  # high coor
+    column_energy = column_energy[:3]  # energy for gyro and megnetometer data was high corrolated
+
+    column_zrc = zero_crossing_rate(data)  # currently reduce accuracy
+
     column_no_peaks = no_peaks(data)
 
     features = np.concatenate(
-        (column_mean, column_sd, column_varience, column_min, column_max, column_mean_absolute_deviation, column_iqr,
-         column_ara, column_skewness, column_kurtosis, column_sma, column_energy, column_zrc,  column_no_peaks))
+        (column_mean, column_sd, column_varience, column_min, column_max,
+         column_ara, column_skewness, column_kurtosis, column_sma, column_energy, column_zrc, column_no_peaks))
+
+    print(len(features))
     return features
 
 
@@ -337,19 +375,26 @@ def get_target(inputdata):
 
 
 def test_feature():
-    file = pd.read_csv("Data/DataForAnalysation/2019_09_10_12_09_33_Walking_Watch.csv")
+    # file = pd.read_csv("Data/DataForAnalysation/2019_09_10_12_09_33_Walking_Watch.csv")
+    #
+    # file.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
+    #
+    # del file['time']
+    # del file['activity']
+    # file = file.astype(
+    #     {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
+    #      "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+    #
+    # sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
+    # for window in sectioned_data:
+    #     window = pd.DataFrame(window)
+    #     output = iqr(window, axis=0)
+    #
+    #     print(output)
 
-    file.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
+    file1 = pd.read_csv("Data/TrainingSet/data_ts.csv")
+    file2 = pd.read_csv("Data/TrainingSet/data_ts_final.csv")
 
-    del file['time']
-    del file['activity']
-    file = file.astype(
-        {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
-         "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
+    print(len(file1.columns))
+    print(len(file2.columns))
 
-    sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
-    for window in sectioned_data:
-        window = pd.DataFrame(window)
-        output = iqr(window, axis=0)
-
-        print(output)

@@ -8,11 +8,16 @@ import pandas as pd
 from sklearn import neighbors
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, ExtraTreesClassifier, AdaBoostClassifier
+from sklearn.linear_model import LassoCV
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
+from sklearn.preprocessing import StandardScaler
+from tsfresh.feature_selection.relevance import calculate_relevance_table
+from sklearn.model_selection import GridSearchCV
 
+import statsmodels.api as sm
 
 import FeatureExtractionPage
 import Main
@@ -49,13 +54,16 @@ class ClassifyPage(tk.Frame):
         target_path_btn.pack()
 
         # ML models
-        self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-        self.clf2 = RandomForestClassifier(n_estimators=100, max_depth=None, min_samples_split=2, random_state=0)
+        self.clf = MLPClassifier(solver='adam', activation='tanh', alpha=0.0001, hidden_layer_sizes=(100,),
+                                 random_state=0)
+        self.clf2 = RandomForestClassifier(n_estimators=50, min_samples_split=2, criterion='entropy', random_state=0)
         self.clf3 = neighbors.KNeighborsClassifier(15, weights='distance')
         self.clf4 = svm.SVC(gamma='scale')
-        self.clf5 = BaggingClassifier(neighbors.KNeighborsClassifier(15, weights='distance'), max_samples=0.5, max_features=0.005)
+        self.clf5 = BaggingClassifier(neighbors.KNeighborsClassifier(15, weights='distance'), max_samples=0.5,
+                                      max_features=0.005)
         # current best, extremely randomized tree algorithm
-        self.clf6 = ExtraTreesClassifier(n_estimators=100, max_depth=None, min_samples_split=4, random_state=0)
+        self.clf6 = ExtraTreesClassifier(n_estimators=200, max_depth=None, min_samples_leaf=1, min_samples_split=4,
+                                         criterion='gini', random_state=0)
         self.clf7 = AdaBoostClassifier(n_estimators=100)
 
         # selecting which method is used for classify data (time frequency / tsfresh)
@@ -83,25 +91,85 @@ class ClassifyPage(tk.Frame):
 
     def plot_coorelation(self):
         data_file = pd.read_csv(self.data_file_path.get())
+        target_file = pd.read_csv(self.target_file_path.get())
+        data_file.astype(np.float32)
         corr = data_file.corr()
+        target_file.columns = ['target']
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
-        fig.colorbar(cax)
-        ticks = np.arange(0, len(corr.columns), 1)
-        ax.set_xticks(ticks)
-        plt.xticks(rotation=90)
-        ax.set_yticks(ticks)
-        ax.set_xticklabels(corr.columns)
-        ax.set_yticklabels(corr.columns)
-        plt.show()
-
-        # corr = corr.values
         # with open("Data/TrainingSet/corr.csv", 'w', newline='') as writeDataFile:
-        #   writer = csv.writer(writeDataFile)
-        #   writer.writerows(corr)
+        #     writer = csv.writer(writeDataFile)
+        #     writer.writerows(corr.values)
         # writeDataFile.close()
+        # print("saved")
+
+        # columns = np.full((corr.shape[0],), True, dtype=bool)
+        # for i in range(corr.shape[0]):
+        #     for j in range(i + 1, corr.shape[0]):
+        #         if corr.iloc[i, j] >= 0.9 or corr.iloc[i, j] <= -0.9:
+        #             if columns[j]:
+        #                 columns[j] = False
+        # selected_columns = data_file.columns[columns]
+        #
+        # print(selected_columns)
+        # print(len(selected_columns))
+        # data = data[selected_columns]
+
+        # cols = list(data_file.columns)
+        # pmax = 1
+        # while (len(cols) > 0):
+        #     p = []
+        #     X_1 = data_file[cols]
+        #     X_1 = sm.add_constant(X_1)
+        #     y = np.asarray(target_file['target'])
+        #     model = sm.OLS(y, np.asarray(X_1))
+        #     model = model.fit()
+        #     p = pd.Series(model.pvalues.values[1:], index=cols)
+        #     pmax = max(p)
+        #     feature_with_p_max = p.idxmax()
+        #     if (pmax > 0.05):
+        #         cols.remove(feature_with_p_max)
+        #     else:
+        #         break
+        # selected_features_BE = cols
+        # print(selected_features_BE)
+
+        reg = LassoCV()
+        reg.fit(data_file, target_file['target'])
+        print("Best alpha using built-in LassoCV: %f" % reg.alpha_)
+        print("Best score using built-in LassoCV: %f" % reg.score(data_file, target_file['target']))
+        coef = pd.Series(reg.coef_, index=data_file.columns)
+
+        print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " + str(
+            sum(coef == 0)) + " variables")
+
+        imp_coef = coef.sort_values()
+        import matplotlib
+        matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
+        imp_coef.plot(kind="barh")
+        plt.title("Feature importance using Lasso Model")
+
+        # relevance_table = calculate_relevance_table(data_file, target_file['target'])
+        # relevant_features = relevance_table[relevance_table.relevant].feature
+        # with open("Data/TrainingSet/features.csv", 'w', newline='') as writeTargetFile:
+        #     writer = csv.writer(writeTargetFile)
+        #     writer.writerows([relevance_table])
+        # writeTargetFile.close()
+        # with open("Data/TrainingSet/features.csv", 'a', newline='') as writeTargetFile:
+        #     writer = csv.writer(writeTargetFile)
+        #     writer.writerows(relevance_table.values)
+        # writeTargetFile.close()
+
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111)
+        # cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
+        # fig.colorbar(cax)
+        # ticks = np.arange(0, len(corr.columns), 1)
+        # ax.set_xticks(ticks)
+        # plt.xticks(rotation=90)
+        # ax.set_yticks(ticks)
+        # ax.set_xticklabels(corr.columns)
+        # ax.set_yticklabels(corr.columns)
+        # plt.show()
 
     def update_data(self, data):
 
@@ -189,9 +257,39 @@ class ClassifyPage(tk.Frame):
         self.output_ml_validate_score(data_file.values, target_file['target'])
 
     def output_ml_validate_score(self, data, target):
-        self.clf.fit(data, target)
-        scores = cross_val_score(self.clf, data, target, cv=5)
+
+        scaler = StandardScaler()
+        scaler.fit(data)
+        data2 = scaler.transform(data)
+        # apply same transformation to test data
+        # X_test = scaler.transform(X_test)
+
+        #
+        self.clf.fit(data2, target)
+        scores = cross_val_score(self.clf, data2, target, cv=5)
         print("MLP: " + str(scores.mean()))
+
+        # mlp = ExtraTreesClassifier()
+        #
+        # parameter_space = {
+        #     'n_estimators': [10, 50, 100, 200],
+        #     'criterion': ['gini', 'entropy'],
+        #     'min_samples_split': [0.05, 0.1, 0.3, 0.5, 0.8, 1.0, 2, 4, 6],
+        #     'min_samples_leaf': [1, 0.1, 0.3, 0.5]
+        # }
+        #
+        # clf = GridSearchCV(mlp, parameter_space, n_jobs=-1, cv=5)
+        # clf.fit(data, target)
+        #
+        # # Best paramete set
+        # print('Best parameters found:\n', clf.best_params_)
+        #
+        # # All results
+        # means = clf.cv_results_['mean_test_score']
+        # stds = clf.cv_results_['std_test_score']
+        # for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+        #     print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+
 
         self.clf2.fit(data, target)
         scores = cross_val_score(self.clf2, data, target, cv=5)
@@ -227,8 +325,9 @@ class ClassifyPage(tk.Frame):
 
         np.set_printoptions(precision=2)
         target_file.columns = ['target']
+
         # Plot normalized confusion matrix
-        plot_confusion_matrix(y_test, y_pred,target_file['target'], normalize=True,
+        plot_confusion_matrix(y_test, y_pred, target_file['target'], normalize=True,
                               title='Normalized confusion matrix')
 
         plt.show()
@@ -260,6 +359,12 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     cm = confusion_matrix(y_true, y_pred)
     # Only use the labels that appear in the data
     classes = unique_labels(classes)
+    lables = []
+    for lable in classes:
+        lable = lable.replace("_", " ")
+        lables.append(lable)
+    lables = np.array(lables)
+
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -275,7 +380,7 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     ax.set(xticks=np.arange(cm.shape[1]),
            yticks=np.arange(cm.shape[0]),
            # ... and label them with the respective list entries
-           xticklabels=classes, yticklabels=classes,
+           xticklabels=lables, yticklabels=lables,
            title=title,
            ylabel='True label',
            xlabel='Predicted label')
