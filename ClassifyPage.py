@@ -54,6 +54,7 @@ class ClassifyPage(tk.Frame):
         self.clf3 = neighbors.KNeighborsClassifier(15, weights='distance')
         self.clf4 = svm.SVC(gamma='scale')
         self.clf5 = BaggingClassifier(neighbors.KNeighborsClassifier(15, weights='distance'), max_samples=0.5, max_features=0.005)
+        # current best, extremely randomized tree algorithm
         self.clf6 = ExtraTreesClassifier(n_estimators=100, max_depth=None, min_samples_split=4, random_state=0)
         self.clf7 = AdaBoostClassifier(n_estimators=100)
 

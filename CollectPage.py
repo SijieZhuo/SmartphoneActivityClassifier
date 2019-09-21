@@ -85,7 +85,7 @@ class CollectPage(tk.Frame):
                 writeFile.close()
         else:
             if self.isRecording is True:
-                print(phone_data[0] + "  " + phone_data[-1])
+                #print(phone_data)
 
                 string = re.findall('[a-zA-Z_]', phone_data[0])
                 front = ''.join(string)

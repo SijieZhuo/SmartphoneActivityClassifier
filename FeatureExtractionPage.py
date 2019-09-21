@@ -234,7 +234,7 @@ def feature_extraction1(data):
     column_ara = average_resultant_acceleration(data)
     column_skewness = data.skew(axis=0)
     column_kurtosis = kurtosis(data, axis=0)
-    column_sma = sma(data)
+    column_sma = sma(data)                          # simple motion average
     column_energy = energy(data)                    # high coor
     column_zrc = zero_crossing_rate(data)           # currently reduce accuracy
     column_no_peaks = no_peaks(data)
