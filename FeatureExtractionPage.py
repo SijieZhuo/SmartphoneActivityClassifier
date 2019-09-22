@@ -265,7 +265,7 @@ def feature_extraction1(data):
 
     column_kurtosis = kurtosis(data, axis=0)
 
-    column_sma = sma(data)  # simple motion average, 3 columns
+    column_sma = sma(data)  # Signal magnitude area, 3 columns
     column_sma = column_sma[:1]  # sma  for gyro and megnetometer data was high corrolated
 
     column_energy = energy(data)  # high coor
@@ -310,7 +310,7 @@ def energy(data):
     return (data.values ** 2).sum(axis=0)
 
 
-def sma(data):
+def sma(data):      # signal magnitude area
     data = data.values
     acc_sum = 0.0
     gyro_sum = 0.0

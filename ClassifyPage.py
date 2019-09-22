@@ -58,10 +58,10 @@ class ClassifyPage(tk.Frame):
         self.clf = MLPClassifier(solver='adam', activation='tanh', alpha=0.0001, hidden_layer_sizes=(100,),
                                  random_state=0)
         self.clf2 = RandomForestClassifier(n_estimators=50, min_samples_split=2, criterion='entropy', random_state=0)
-        self.clf3 = neighbors.KNeighborsClassifier(15, weights='distance')
+        self.clf3 = neighbors.KNeighborsClassifier(5)
         self.clf4 = svm.SVC(gamma='scale')
-        self.clf5 = BaggingClassifier(neighbors.KNeighborsClassifier(15, weights='distance'), max_samples=0.5,
-                                      max_features=0.005)
+        self.clf5 = BaggingClassifier(neighbors.KNeighborsClassifier(5), max_samples=1.0, n_estimators=20,
+                                      max_features=0.06)
         # current best, extremely randomized tree algorithm
         self.clf6 = ExtraTreesClassifier(n_estimators=200, max_depth=None, min_samples_leaf=1, min_samples_split=4,
                                          criterion='gini', random_state=0)
@@ -266,35 +266,10 @@ class ClassifyPage(tk.Frame):
         scaler = StandardScaler()
         scaler.fit(data)
         data2 = scaler.transform(data)
-        # apply same transformation to test data
-        # X_test = scaler.transform(X_test)
 
-        #
         self.clf.fit(data2, target)
         scores = cross_val_score(self.clf, data2, target, cv=5)
         print("MLP: " + str(scores.mean()))
-
-        # mlp = ExtraTreesClassifier()
-        #
-        # parameter_space = {
-        #     'n_estimators': [10, 50, 100, 200],
-        #     'criterion': ['gini', 'entropy'],
-        #     'min_samples_split': [0.05, 0.1, 0.3, 0.5, 0.8, 1.0, 2, 4, 6],
-        #     'min_samples_leaf': [1, 0.1, 0.3, 0.5]
-        # }
-        #
-        # clf = GridSearchCV(mlp, parameter_space, n_jobs=-1, cv=5)
-        # clf.fit(data, target)
-        #
-        # # Best paramete set
-        # print('Best parameters found:\n', clf.best_params_)
-        #
-        # # All results
-        # means = clf.cv_results_['mean_test_score']
-        # stds = clf.cv_results_['std_test_score']
-        # for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-        #     print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
-
 
         self.clf2.fit(data, target)
         scores = cross_val_score(self.clf2, data, target, cv=5)
@@ -319,6 +294,27 @@ class ClassifyPage(tk.Frame):
         self.clf7.fit(data, target)
         scores = cross_val_score(self.clf7, data, target, cv=5)
         print("AdaBoosting: " + str(scores.mean()))
+
+        # mlp = ExtraTreesClassifier()
+        #
+        # parameter_space = {
+        #     'n_estimators': [10, 50, 100, 200],
+        #     'criterion': ['gini', 'entropy'],
+        #     'min_samples_split': [0.05, 0.1, 0.3, 0.5, 0.8, 1.0, 2, 4, 6],
+        #     'min_samples_leaf': [1, 0.1, 0.3, 0.5]
+        # }
+        #
+        # clf = GridSearchCV(mlp, parameter_space, n_jobs=-1, cv=5)
+        # clf.fit(data, target)
+        #
+        # # Best paramete set
+        # print('Best parameters found:\n', clf.best_params_)
+        #
+        # # All results
+        # means = clf.cv_results_['mean_test_score']
+        # stds = clf.cv_results_['std_test_score']
+        # for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+        #     print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
 
     def confusion_matrix(self):
         data_file = pd.read_csv(self.data_file_path.get())
@@ -347,20 +343,15 @@ class ClassifyPage(tk.Frame):
             target_file.columns = ['target']
 
         lables = unique_labels(target_file['target'])
-        print(lables[-1])
+
         output_target = []
-        for i in range(0,len(data_file.values)):
+        for i in range(0, len(data_file.values)):
             output_target.append(lables[random.randrange(len(lables))])
 
         target_df = pd.DataFrame(output_target)
         target_df.columns = ['target']
 
-        self.output_ml_validate_score(data_file,target_df['target'])
-
-
-
-
-
+        self.output_ml_validate_score(data_file, target_df['target'])
 
 
 def browse_btn_hit(folder_path):
@@ -369,8 +360,6 @@ def browse_btn_hit(folder_path):
     filename = filedialog.askopenfilename()
     folder_path.set(filename)
     print(filename)
-
-
 
 
 def plot_confusion_matrix(y_true, y_pred, classes,
