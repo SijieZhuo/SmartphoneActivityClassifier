@@ -189,7 +189,7 @@ def feature_extraction_ts_realtime(data):
 
 
 def ts_feature_extraction():
-    # combine_data()
+    combine_data()
     feature_extraction_ts()
     feature_selection()
     generate_final_features_ts()
@@ -279,7 +279,6 @@ def feature_extraction1(data):
         (column_mean, column_sd, column_varience, column_min, column_max,
          column_ara, column_skewness, column_kurtosis, column_sma, column_energy, column_zrc, column_no_peaks))
 
-    print(len(features))
     return features
 
 

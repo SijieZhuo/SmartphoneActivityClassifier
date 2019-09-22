@@ -5,6 +5,7 @@ from tkinter import filedialog
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import random
 from sklearn import neighbors
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, ExtraTreesClassifier, AdaBoostClassifier
@@ -85,6 +86,10 @@ class ClassifyPage(tk.Frame):
         # confusion matrix
         confusion_btn = tk.Button(self, text="Confusion matrix", command=lambda: self.confusion_matrix())
         confusion_btn.pack()
+
+        # confusion matrix
+        validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random())
+        validate_random_btn.pack()
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
@@ -218,12 +223,12 @@ class ClassifyPage(tk.Frame):
             elif self.method_text.get() == 'Time/Frequency':
                 data_to_predict = [data]
 
-            prediction = self.clf2.predict(data_to_predict)
+            prediction = self.clf6.predict(data_to_predict)
             print(prediction)
-            probability = self.clf2.predict_proba(data_to_predict)
+            probability = self.clf6.predict_proba(data_to_predict)
             prediction_prob = {}
             for i in range(0, len(probability[0])):
-                prediction_prob[self.clf2.classes_[i]] = probability[0][i]
+                prediction_prob[self.clf6.classes_[i]] = probability[0][i]
             sorted_prob = sorted(prediction_prob.items(), key=lambda kv: kv[1], reverse=True)
             print(sorted_prob)
 
@@ -332,6 +337,31 @@ class ClassifyPage(tk.Frame):
 
         plt.show()
 
+    def validate_by_random(self):
+        data_file = pd.read_csv(self.data_file_path.get())
+        target_file = pd.read_csv(self.target_file_path.get())
+
+        if self.method_text.get() == 'tsfresh':
+            target_file.columns = ['index', 'target']
+        elif self.method_text.get() == 'Time/Frequency':
+            target_file.columns = ['target']
+
+        lables = unique_labels(target_file['target'])
+        print(lables[-1])
+        output_target = []
+        for i in range(0,len(data_file.values)):
+            output_target.append(lables[random.randrange(len(lables))])
+
+        target_df = pd.DataFrame(output_target)
+        target_df.columns = ['target']
+
+        self.output_ml_validate_score(data_file,target_df['target'])
+
+
+
+
+
+
 
 def browse_btn_hit(folder_path):
     # Allow user to select a directory and store it in global var
@@ -339,6 +369,8 @@ def browse_btn_hit(folder_path):
     filename = filedialog.askopenfilename()
     folder_path.set(filename)
     print(filename)
+
+
 
 
 def plot_confusion_matrix(y_true, y_pred, classes,
