@@ -44,16 +44,16 @@ class ClassifyPage(tk.Frame):
 
         self.data_file_path = tk.StringVar()
         data_label = tk.Label(self, textvariable=self.data_file_path)
-        data_label.pack()
-        data_path_btn = tk.Button(self, text="Browse data set", command=lambda: browse_btn_hit(self.data_file_path))
-        data_path_btn.pack()
+        data_label.grid(column=1, pady=3)
+        data_path_btn = tk.Button(self, text="Browse data set", command=lambda: browse_btn_hit(self.data_file_path), width=25)
+        data_path_btn.grid(column=1, pady=3)
 
         self.target_file_path = tk.StringVar()
         target_label = tk.Label(self, textvariable=self.target_file_path)
-        target_label.pack()
+        target_label.grid(column=1, pady=3)
         target_path_btn = tk.Button(self, text="Browse target set",
-                                    command=lambda: browse_btn_hit(self.target_file_path))
-        target_path_btn.pack()
+                                    command=lambda: browse_btn_hit(self.target_file_path), width=25)
+        target_path_btn.grid(column=1, pady=3)
 
         # ML models
         self.clf = MLPClassifier(solver='adam', activation='tanh', alpha=0.0001, hidden_layer_sizes=(100,),
@@ -69,31 +69,34 @@ class ClassifyPage(tk.Frame):
         self.clf7 = AdaBoostClassifier(n_estimators=100)
 
         # selecting which method is used for classify data (time frequency / tsfresh)
-        self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method())
-        self.method_btn.pack()
+        self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method(), width=25)
+        self.method_btn.grid(column=1, pady=3)
 
         # actual realtime classification
-        classify_btn = tk.Button(self, text="Classify", command=lambda: self.classify_btn_hit())
-        classify_btn.pack()
+        classify_btn = tk.Button(self, text="Classify", command=lambda: self.classify_btn_hit(), width=25)
+        classify_btn.grid(column=1, pady=3)
 
         # ploting the coorelation graph for the features
-        coor_btn = tk.Button(self, text="Correlation plot", command=lambda: self.plot_coorelation())
-        coor_btn.pack()
+        coor_btn = tk.Button(self, text="Correlation plot", command=lambda: self.plot_coorelation(), width=25)
+        coor_btn.grid(column=1, pady=3)
 
         # 5 fold cross validation for the classifiers
-        validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit())
-        validate_btn.pack()
+        validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit(), width=25)
+        validate_btn.grid(column=1, pady=3)
 
         # confusion matrix
-        confusion_btn = tk.Button(self, text="Confusion matrix", command=lambda: self.confusion_matrix())
-        confusion_btn.pack()
+        confusion_btn = tk.Button(self, text="Confusion matrix", command=lambda: self.confusion_matrix(), width=25)
+        confusion_btn.grid(column=1, pady=3)
 
         # confusion matrix
-        validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random())
-        validate_random_btn.pack()
+        validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random(), width=25)
+        validate_random_btn.grid(column=1, pady=3)
 
-        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
-        back_btn.pack()
+        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"), width=25)
+        back_btn.grid(column=1, pady=3)
+
+        self.grid_columnconfigure((0, 2), weight=1)
+        self.grid_rowconfigure((0, 12), weight=1)
 
         # setup variables for the classify window
         self.window = tk.Toplevel(self)
@@ -393,6 +396,7 @@ def browse_btn_hit(folder_path):
     # Allow user to select a directory and store it in global var
     # called folder_path
     filename = filedialog.askopenfilename()
+    filename = filename.split('/')[-1]
     folder_path.set(filename)
     print(filename)
 

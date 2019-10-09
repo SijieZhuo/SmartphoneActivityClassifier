@@ -79,5 +79,6 @@ class PhoneData(object):
 
 if __name__ == "__main__":
     main = ClassifierApp()
-    main.wm_geometry("400x300")
+    main.wm_geometry("400x400")
+    main.title("Smartphone activity classification")
     main.mainloop()
