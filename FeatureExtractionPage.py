@@ -154,7 +154,7 @@ def generate_final_features_ts():
         writer.writerows(result.values)
     writeTargetFile.close()
 
-    df = pd.read_csv("Data/TrainingSet/target_all.csv",skiprows=0)
+    df = pd.read_csv("Data/TrainingSet/target_all.csv", skiprows=0)
     with open("Data/TrainingSet/target_ts_final.csv", 'w', newline='') as writeTargetFile:
         writer = csv.writer(writeTargetFile)
         writer.writerows(df.values)
@@ -310,7 +310,7 @@ def energy(data):
     return (data.values ** 2).sum(axis=0)
 
 
-def sma(data):      # signal magnitude area
+def sma(data):  # signal magnitude area
     data = data.values
     acc_sum = 0.0
     gyro_sum = 0.0
@@ -396,4 +396,3 @@ def test_feature():
 
     print(len(file1.columns))
     print(len(file2.columns))
-

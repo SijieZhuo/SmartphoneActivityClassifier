@@ -25,11 +25,12 @@ class ClassifierApp(tk.Tk):
             os.makedirs("Data/TrainingSet")
 
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
-
+        self.winfo_toplevel().title("Smartphone activity classification")
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
         # will be raised above the others
         container = tk.Frame(self)
+
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -78,5 +79,5 @@ class PhoneData(object):
 
 if __name__ == "__main__":
     main = ClassifierApp()
-    main.wm_geometry("400x400")
+    main.wm_geometry("400x300")
     main.mainloop()

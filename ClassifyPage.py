@@ -27,6 +27,7 @@ import Main
 class ClassifyPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+
         self.controller = controller
 
         self.data = controller.current_data
@@ -94,6 +95,28 @@ class ClassifyPage(tk.Frame):
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
         back_btn.pack()
 
+        # setup variables for the classify window
+        self.window = tk.Toplevel(self)
+
+        self.window_text1 = tk.StringVar()
+        self.window_text2 = tk.StringVar()
+        self.window_text3 = tk.StringVar()
+
+        self.label1 = tk.Label(self.window, textvariable=self.window_text1).pack()
+        self.label2 = tk.Label(self.window, textvariable=self.window_text2).pack()
+        self.label3 = tk.Label(self.window, textvariable=self.window_text3).pack()
+
+        self.setup_window()
+
+    def setup_window(self):
+        self.window.wm_title("Classification")
+        self.window.geometry("500x300")
+        self.window.withdraw()
+
+        self.window_text1.set("prediction")
+        self.window_text2.set("prediction")
+        self.window_text3.set("prediction")
+
     def plot_coorelation(self):
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
@@ -117,6 +140,7 @@ class ClassifyPage(tk.Frame):
         #
         # print(selected_columns)
         # print(len(selected_columns))
+
         # data = data[selected_columns]
 
         # cols = list(data_file.columns)
@@ -138,20 +162,20 @@ class ClassifyPage(tk.Frame):
         # selected_features_BE = cols
         # print(selected_features_BE)
 
-        reg = LassoCV()
-        reg.fit(data_file, target_file['target'])
-        print("Best alpha using built-in LassoCV: %f" % reg.alpha_)
-        print("Best score using built-in LassoCV: %f" % reg.score(data_file, target_file['target']))
-        coef = pd.Series(reg.coef_, index=data_file.columns)
-
-        print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " + str(
-            sum(coef == 0)) + " variables")
-
-        imp_coef = coef.sort_values()
-        import matplotlib
-        matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
-        imp_coef.plot(kind="barh")
-        plt.title("Feature importance using Lasso Model")
+        # reg = LassoCV()
+        # reg.fit(data_file, target_file['target'])
+        # print("Best alpha using built-in LassoCV: %f" % reg.alpha_)
+        # print("Best score using built-in LassoCV: %f" % reg.score(data_file, target_file['target']))
+        # coef = pd.Series(reg.coef_, index=data_file.columns)
+        #
+        # print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " + str(
+        #     sum(coef == 0)) + " variables")
+        #
+        # imp_coef = coef.sort_values()
+        # import matplotlib
+        # matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
+        # imp_coef.plot(kind="barh")
+        # plt.title("Feature importance using Lasso Model")
 
         # relevance_table = calculate_relevance_table(data_file, target_file['target'])
         # relevant_features = relevance_table[relevance_table.relevant].feature
@@ -164,17 +188,17 @@ class ClassifyPage(tk.Frame):
         #     writer.writerows(relevance_table.values)
         # writeTargetFile.close()
 
-        # fig = plt.figure()
-        # ax = fig.add_subplot(111)
-        # cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
-        # fig.colorbar(cax)
-        # ticks = np.arange(0, len(corr.columns), 1)
-        # ax.set_xticks(ticks)
-        # plt.xticks(rotation=90)
-        # ax.set_yticks(ticks)
-        # ax.set_xticklabels(corr.columns)
-        # ax.set_yticklabels(corr.columns)
-        # plt.show()
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
+        fig.colorbar(cax)
+        ticks = np.arange(0, len(corr.columns), 1)
+        ax.set_xticks(ticks)
+        plt.xticks(rotation=90)
+        ax.set_yticks(ticks)
+        ax.set_xticklabels(corr.columns)
+        ax.set_yticklabels(corr.columns)
+        plt.show()
 
     def update_data(self, data):
 
@@ -223,16 +247,20 @@ class ClassifyPage(tk.Frame):
             elif self.method_text.get() == 'Time/Frequency':
                 data_to_predict = [data]
 
-            prediction = self.clf6.predict(data_to_predict)
-            print(prediction)
+            # prediction = self.clf6.predict(data_to_predict)
+
             probability = self.clf6.predict_proba(data_to_predict)
             prediction_prob = {}
             for i in range(0, len(probability[0])):
                 prediction_prob[self.clf6.classes_[i]] = probability[0][i]
             sorted_prob = sorted(prediction_prob.items(), key=lambda kv: kv[1], reverse=True)
-            print(sorted_prob)
+            self.window_text1.set(sorted_prob[0])
+            self.window_text2.set(sorted_prob[1])
+            self.window_text3.set(sorted_prob[2])
 
     def classify_btn_hit(self):
+
+        self.show_window()
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
 
@@ -243,6 +271,9 @@ class ClassifyPage(tk.Frame):
 
         self.clf6.fit(data_file.values, target_file['target'])
         self.is_classifying = True
+
+    def show_window(self):
+        self.window.deiconify()
 
     def select_classify_method(self):
         if self.method_text.get() == "Time/Frequency":
@@ -258,6 +289,8 @@ class ClassifyPage(tk.Frame):
             target_file.columns = ['index', 'target']
         elif self.method_text.get() == 'Time/Frequency':
             target_file.columns = ['target']
+
+            target_file = change_read_to_scroll(target_file)
 
         self.output_ml_validate_score(data_file.values, target_file['target'])
 
@@ -320,12 +353,14 @@ class ClassifyPage(tk.Frame):
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
 
+        target_file.columns = ['target']
+        target_file = change_read_to_scroll(target_file)
+
         # Split the data into a training set and a test set
         X_train, X_test, y_train, y_test = train_test_split(data_file, target_file, random_state=0)
         y_pred = self.clf6.fit(X_train, y_train).predict(X_test)
 
         np.set_printoptions(precision=2)
-        target_file.columns = ['target']
 
         # Plot normalized confusion matrix
         plot_confusion_matrix(y_test, y_pred, target_file['target'], normalize=True,
@@ -362,10 +397,7 @@ def browse_btn_hit(folder_path):
     print(filename)
 
 
-def plot_confusion_matrix(y_true, y_pred, classes,
-                          normalize=False,
-                          title=None,
-                          cmap=plt.cm.Blues):
+def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -420,6 +452,14 @@ def plot_confusion_matrix(y_true, y_pred, classes,
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
     return ax
+
+
+def change_read_to_scroll(file):
+    file.loc[file['target'] == 'Sitting_Read', 'target'] = 'Sitting_Scroll'
+    file.loc[file['target'] == 'Walking_Read', 'target'] = 'Walking_Scroll'
+    file.loc[file['target'] == 'Multitasking_Read', 'target'] = 'Multitasking_Scroll'
+
+    return file
 
 
 class DataWindow(object):
