@@ -10,20 +10,23 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        connect_btn = tk.Button(self, text="Connect to the device", command=lambda: bt_connect_hit(self))
-        connect_btn.pack()
+        connect_btn = tk.Button(self, text="Connect to the device", command=lambda: bt_connect_hit(self), width=25)
+        connect_btn.grid(row=1, column=1, pady=10)
 
-        self.collect_page_btn = tk.Button(self, text="Collect data", state=tk.DISABLED,
-                                          command=lambda: controller.show_frame("CollectPage"))
-        self.collect_page_btn.pack()
+        self.collect_page_btn = tk.Button(self, text="Collect data", #state=tk.DISABLED,
+                                          command=lambda: controller.show_frame("CollectPage"), width=25)
+        self.collect_page_btn.grid(row=2, column=1, pady=10)
 
         self.feature_page_btn = tk.Button(self, text="Feature extraction",
-                                          command=lambda: controller.show_frame("FeatureExtractionPage"))
-        self.feature_page_btn.pack()
+                                          command=lambda: controller.show_frame("FeatureExtractionPage"), width=25)
+        self.feature_page_btn.grid(row=3, column=1, pady=10)
 
         self.classify_page_btn = tk.Button(self, text="Classify",
-                                           command=lambda: controller.show_frame("ClassifyPage"))
-        self.classify_page_btn.pack()
+                                           command=lambda: controller.show_frame("ClassifyPage"), width=25)
+        self.classify_page_btn.grid(row=4, column=1, pady=10)
+
+        self.grid_columnconfigure((0, 2), weight=1)
+        self.grid_rowconfigure((0,5), weight=1)
 
     # refresh the bt devices options in the dropdown menu
     def refresh_option(self):

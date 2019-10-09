@@ -25,21 +25,23 @@ class FeatureExtractionPage(tk.Frame):
         #  -> generate_final_features_ts()
 
         # button for time frequency domain feature extraction
-        tf_btn = tk.Button(self, text="Time/Frequency extraction", command=lambda: time_frequency_feature_extraction())
-        tf_btn.pack()
+        tf_btn = tk.Button(self, text="Time/Frequency extraction", command=lambda: time_frequency_feature_extraction(), width=25)
+        tf_btn.grid(row=1, column=1, pady=10)
 
         # selection_btn = tk.Button(self, text="ts selection", command=lambda: feature_selection())
         # selection_btn.pack()
 
         # button for tsfresh feature extraction
-        ts_btn = tk.Button(self, text="generate ts features", command=lambda: ts_feature_extraction())
-        ts_btn.pack()
+        ts_btn = tk.Button(self, text="generate ts features", command=lambda: ts_feature_extraction(), width=25)
+        ts_btn.grid(row=2, column=1, pady=10)
 
-        test_btn = tk.Button(self, text="test features", command=lambda: test_feature())
-        test_btn.pack()
+        test_btn = tk.Button(self, text="test features", command=lambda: test_feature(), width=25)
+        test_btn.grid(row=3, column=1, pady=10)
 
-        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"))
-        back_btn.pack()
+        back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"), width=25)
+        back_btn.grid(row=4, column=1, pady=10)
+        self.grid_columnconfigure((0, 2), weight=1)
+        self.grid_rowconfigure((0, 5), weight=1)
 
 
 # extract data from each of the csv files, and combine them into one big csv file
