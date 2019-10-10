@@ -15,7 +15,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
 from sklearn.preprocessing import StandardScaler
-from tsfresh.feature_selection.relevance import calculate_relevance_table
+# from tsfresh.feature_selection.relevance import calculate_relevance_table
 from sklearn.model_selection import GridSearchCV
 
 import statsmodels.api as sm
@@ -45,7 +45,8 @@ class ClassifyPage(tk.Frame):
         self.data_file_path = tk.StringVar()
         data_label = tk.Label(self, textvariable=self.data_file_path)
         data_label.grid(column=1, pady=3)
-        data_path_btn = tk.Button(self, text="Browse data set", command=lambda: browse_btn_hit(self.data_file_path), width=25)
+        data_path_btn = tk.Button(self, text="Browse data set", command=lambda: browse_btn_hit(self.data_file_path),
+                                  width=25)
         data_path_btn.grid(column=1, pady=3)
 
         self.target_file_path = tk.StringVar()
@@ -69,7 +70,8 @@ class ClassifyPage(tk.Frame):
         self.clf7 = AdaBoostClassifier(n_estimators=100)
 
         # selecting which method is used for classify data (time frequency / tsfresh)
-        self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method(), width=25)
+        self.method_btn = tk.Button(self, textvariable=self.method_text, command=lambda: self.select_classify_method(),
+                                    width=25)
         self.method_btn.grid(column=1, pady=3)
 
         # actual realtime classification
@@ -89,7 +91,8 @@ class ClassifyPage(tk.Frame):
         confusion_btn.grid(column=1, pady=3)
 
         # confusion matrix
-        validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random(), width=25)
+        validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random(),
+                                        width=25)
         validate_random_btn.grid(column=1, pady=3)
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"), width=25)
@@ -105,20 +108,60 @@ class ClassifyPage(tk.Frame):
         self.window_text2 = tk.StringVar()
         self.window_text3 = tk.StringVar()
 
-        self.label1 = tk.Label(self.window, textvariable=self.window_text1).pack()
-        self.label2 = tk.Label(self.window, textvariable=self.window_text2).pack()
-        self.label3 = tk.Label(self.window, textvariable=self.window_text3).pack()
+        self.label1 = tk.Label(self.window, textvariable=self.window_text1)
+        self.label2 = tk.Label(self.window, textvariable=self.window_text2)
+        self.label3 = tk.Label(self.window, textvariable=self.window_text3)
+
+        self.window_text1_accuracy = tk.StringVar()
+        self.window_text2_accuracy = tk.StringVar()
+        self.window_text3_accuracy = tk.StringVar()
+
+        self.accuracy1 = tk.Label(self.window, textvariable=self.window_text1_accuracy)
+        self.accuracy2 = tk.Label(self.window, textvariable=self.window_text2_accuracy)
+        self.accuracy3 = tk.Label(self.window, textvariable=self.window_text3_accuracy)
 
         self.setup_window()
 
     def setup_window(self):
         self.window.wm_title("Classification")
-        self.window.geometry("500x300")
+        self.window.geometry("600x400")
         self.window.withdraw()
 
         self.window_text1.set("prediction")
         self.window_text2.set("prediction")
         self.window_text3.set("prediction")
+
+        self.label1.config(font=("Courier", 44))
+        self.label2.config(font=("Courier", 33))
+        self.label3.config(font=("Courier", 22))
+
+        self.window_text1_accuracy.set("accuracy")
+        self.window_text2_accuracy.set("accuracy")
+        self.window_text3_accuracy.set("accuracy")
+
+        self.accuracy1.config(font=("Courier", 20))
+        self.accuracy2.config(font=("Courier", 20))
+        self.accuracy3.config(font=("Courier", 20))
+
+        self.label1.pack()
+        self.accuracy1.pack()
+        self.label2.pack()
+        self.accuracy2.pack()
+        self.label3.pack()
+        self.accuracy3.pack()
+
+    def update_window(self, prob):
+        firstPrediction = prob[0]
+        secondPrediction = prob[1]
+        thirdPrediction = prob[2]
+
+        self.window_text1.set(firstPrediction[0].replace("_", " "))
+        self.window_text2.set(secondPrediction[0].replace("_", " "))
+        self.window_text3.set(thirdPrediction[0].replace("_", " "))
+
+        self.window_text1_accuracy.set(firstPrediction[1])
+        self.window_text2_accuracy.set(secondPrediction[1])
+        self.window_text3_accuracy.set(thirdPrediction[1])
 
     def plot_coorelation(self):
         data_file = pd.read_csv(self.data_file_path.get())
@@ -190,7 +233,7 @@ class ClassifyPage(tk.Frame):
         #     writer = csv.writer(writeTargetFile)
         #     writer.writerows(relevance_table.values)
         # writeTargetFile.close()
-
+        change_read_to_scroll(target_file)
         fig = plt.figure()
         ax = fig.add_subplot(111)
         cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
@@ -257,13 +300,10 @@ class ClassifyPage(tk.Frame):
             for i in range(0, len(probability[0])):
                 prediction_prob[self.clf6.classes_[i]] = probability[0][i]
             sorted_prob = sorted(prediction_prob.items(), key=lambda kv: kv[1], reverse=True)
-            self.window_text1.set(sorted_prob[0])
-            self.window_text2.set(sorted_prob[1])
-            self.window_text3.set(sorted_prob[2])
+            self.update_window(sorted_prob)
 
     def classify_btn_hit(self):
 
-        self.show_window()
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
 
@@ -271,11 +311,11 @@ class ClassifyPage(tk.Frame):
             target_file.columns = ['index', 'target']
         elif self.method_text.get() == 'Time/Frequency':
             target_file.columns = ['target']
+        change_read_to_scroll(target_file)
 
         self.clf6.fit(data_file.values, target_file['target'])
         self.is_classifying = True
 
-    def show_window(self):
         self.window.deiconify()
 
     def select_classify_method(self):
@@ -285,8 +325,8 @@ class ClassifyPage(tk.Frame):
             self.method_text.set("Time/Frequency")
 
     def validate_btn_hit(self):
-        data_file = pd.read_csv(self.data_file_path.get())
-        target_file = pd.read_csv(self.target_file_path.get())
+        data_file = pd.read_csv(self.data_file_path.get(), encoding='utf-8')
+        target_file = pd.read_csv(self.target_file_path.get(), encoding='utf-8')
 
         if self.method_text.get() == 'tsfresh':
             target_file.columns = ['index', 'target']
@@ -396,7 +436,7 @@ def browse_btn_hit(folder_path):
     # Allow user to select a directory and store it in global var
     # called folder_path
     filename = filedialog.askopenfilename()
-    filename = filename.split('/')[-1]
+    # filename = filename.split('/')[-1]
     folder_path.set(filename)
     print(filename)
 

@@ -13,7 +13,7 @@ class StartPage(tk.Frame):
         connect_btn = tk.Button(self, text="Connect to the device", command=lambda: bt_connect_hit(self), width=25)
         connect_btn.grid(row=1, column=1, pady=10)
 
-        self.collect_page_btn = tk.Button(self, text="Collect data", #state=tk.DISABLED,
+        self.collect_page_btn = tk.Button(self, text="Collect data", state=tk.DISABLED,
                                           command=lambda: controller.show_frame("CollectPage"), width=25)
         self.collect_page_btn.grid(row=2, column=1, pady=10)
 
