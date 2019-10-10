@@ -312,7 +312,6 @@ def energy(data):
     return (data.values ** 2).sum(axis=0)
 
 
-
 def sma(data):
     data = data.values
     acc_sum = 0.0
