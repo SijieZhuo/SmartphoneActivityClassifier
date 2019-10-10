@@ -313,8 +313,7 @@ def energy(data):
 
 
 
-def sma(data):  # signal magnitude area
-
+def sma(data):
     data = data.values
     acc_sum = 0.0
     gyro_sum = 0.0
