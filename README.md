@@ -4,7 +4,7 @@ performing feature extraction and real-time classification for smartphone activi
 
 ## Software Installation
 the latest version of the application can be found in the release page.
-
+https://github.com/SijieZhuo/SmartphoneActivityClassifier/releases
 1. Extract the file
 2. Open the application in any IDE (optional)
 3. Run the Main.py
