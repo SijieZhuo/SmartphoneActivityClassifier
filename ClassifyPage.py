@@ -82,15 +82,15 @@ class ClassifyPage(tk.Frame):
         coor_btn = tk.Button(self, text="Correlation plot", command=lambda: self.plot_coorelation(), width=25)
         coor_btn.grid(column=1, pady=3)
 
-        # 5 fold cross validation for the classifiers
-        validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit(), width=25)
-        validate_btn.grid(column=1, pady=3)
-
         # confusion matrix
         confusion_btn = tk.Button(self, text="Confusion matrix", command=lambda: self.confusion_matrix(), width=25)
         confusion_btn.grid(column=1, pady=3)
 
-        # confusion matrix
+        # 5 fold cross validation for the classifiers
+        validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit(), width=25)
+        validate_btn.grid(column=1, pady=3)
+
+
         validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random(),
                                         width=25)
         validate_random_btn.grid(column=1, pady=3)

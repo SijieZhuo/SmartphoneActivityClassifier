@@ -35,8 +35,8 @@ class FeatureExtractionPage(tk.Frame):
         ts_btn = tk.Button(self, text="generate ts features", command=lambda: ts_feature_extraction(), width=25)
         ts_btn.grid(row=2, column=1, pady=10)
 
-        test_btn = tk.Button(self, text="test features", command=lambda: test_feature(), width=25)
-        test_btn.grid(row=3, column=1, pady=10)
+        # test_btn = tk.Button(self, text="test features", command=lambda: test_feature(), width=25)
+        # test_btn.grid(row=3, column=1, pady=10)
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"), width=25)
         back_btn.grid(row=4, column=1, pady=10)
