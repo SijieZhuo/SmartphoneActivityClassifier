@@ -1,17 +1,17 @@
 import csv
 import os
 import tkinter as tk
-import matplotlib.pyplot as plt
+
 import numpy as np
 import pandas as pd
 import tsfresh
 import tsfresh.feature_selection
-from scipy.stats import kurtosis, iqr
+from scipy.signal import find_peaks
+from scipy.stats import kurtosis
 from tsfresh import extract_features
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.feature_selection.relevance import calculate_relevance_table
 from tsfresh.utilities.dataframe_functions import impute
-from scipy.signal import find_peaks
 
 import Main
 
@@ -25,18 +25,13 @@ class FeatureExtractionPage(tk.Frame):
         #  -> generate_final_features_ts()
 
         # button for time frequency domain feature extraction
-        tf_btn = tk.Button(self, text="Time/Frequency extraction", command=lambda: time_frequency_feature_extraction(), width=25)
+        tf_btn = tk.Button(self, text="Time/Frequency extraction", command=lambda: time_frequency_feature_extraction(),
+                           width=25)
         tf_btn.grid(row=1, column=1, pady=10)
-
-        # selection_btn = tk.Button(self, text="ts selection", command=lambda: feature_selection())
-        # selection_btn.pack()
 
         # button for tsfresh feature extraction
         ts_btn = tk.Button(self, text="generate ts features", command=lambda: ts_feature_extraction(), width=25)
         ts_btn.grid(row=2, column=1, pady=10)
-
-        # test_btn = tk.Button(self, text="test features", command=lambda: test_feature(), width=25)
-        # test_btn.grid(row=3, column=1, pady=10)
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"), width=25)
         back_btn.grid(row=4, column=1, pady=10)
@@ -44,8 +39,10 @@ class FeatureExtractionPage(tk.Frame):
         self.grid_rowconfigure((0, 5), weight=1)
 
 
-# extract data from each of the csv files, and combine them into one big csv file
 def combine_data():
+    """
+    Extract data from each of the csv files, and combine them into one big csv file
+    """
     filename_list = []
     # get file name
     for file in os.listdir("Data/DataForAnalysation"):
@@ -92,8 +89,13 @@ def combine_data():
 
 
 # first step of extract ts features
-# reading the big csv file been generated form combine_data(), and extract all the possible features in tsfresh library
+#
 def feature_extraction_ts():
+    """
+    This function reads the big csv file been generated form combine_data(), and extract
+    all the possible features in tsfresh library
+    :return:
+    """
     df = pd.read_csv("Data/TrainingSet/data_all.csv")
     df.columns = ["id", "time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
 
@@ -114,12 +116,14 @@ def feature_extraction_ts():
     print("done")
 
 
-# analysing the extracted features, and generate a list of features that are relevant to the data
 def feature_selection():
+    """
+    This function analyse the extracted features, and generate a list of features that are relevant to the data
+    """
     data = pd.read_csv("Data/TrainingSet/data_ts.csv")
     target = pd.read_csv("Data/TrainingSet/target_all.csv")
     target.columns = ['index', 'target']
-    print(target['target'])
+
     relevance_table = calculate_relevance_table(data, target['target'], fdr_level=0.0001)
     relevant_features = relevance_table[relevance_table.relevant].feature
     print(relevant_features)
@@ -131,8 +135,12 @@ def feature_selection():
     return
 
 
-# generate the final sets of features that would be used for the ML training
 def generate_final_features_ts():
+    """
+    This function generates the final sets of features that would be used for the ML training
+    it first read the features selected from the feature_selection function, then use the
+    feature to extract features from data csv file
+    """
     featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
 
     features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
@@ -163,13 +171,15 @@ def generate_final_features_ts():
     writeTargetFile.close()
 
 
-# method used for realtime feature extraction
-# input is a window of raw data, and the output is the feature generated
 def feature_extraction_ts_realtime(data):
+    """
+    This function is used for realtime feature extraction
+    :param data: incoming real-time data window
+    :return: the feature extracted frim the input raw data
+    """
     featureCSV = pd.read_csv("Data/TrainingSet/features.csv")
     features = tsfresh.feature_extraction.settings.from_columns(featureCSV)
 
-    # df = pd.DataFrame(data)
     indexColumn = np.array([[0]] * len(data))
     df = np.append(indexColumn, data, axis=1)
     df = pd.DataFrame(df)
@@ -191,14 +201,19 @@ def feature_extraction_ts_realtime(data):
 
 
 def ts_feature_extraction():
+    """
+    This function executes the steps to perform feature extraction using tsfresh
+    """
     combine_data()
     feature_extraction_ts()
     feature_selection()
     generate_final_features_ts()
 
 
-# calculate the features in the selected folder and save the extracted file in TrainingSet
 def time_frequency_feature_extraction():
+    """
+    This function calculates the features in the selected folder and save the extracted file in TrainingSet
+    """
     filename_list = []
     # get file name
     for file in os.listdir("Data/DataForAnalysation"):
@@ -218,6 +233,7 @@ def time_frequency_feature_extraction():
             {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
              "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
 
+        # particition the data into windows
         sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
 
         for window in sectioned_data:
@@ -241,6 +257,11 @@ def time_frequency_feature_extraction():
 
 # manually calculate time and frequency domain features
 def feature_extraction1(data):
+    """
+    This function manually calculate time and frequency domain features
+    :param data: the input raw data window
+    :return: feature extracted from the data window
+    """
     data = pd.DataFrame(data)
 
     column_mean = data.mean(axis=0)
@@ -373,28 +394,3 @@ def get_data(inputdata):
 
 def get_target(inputdata):
     return inputdata[inputdata.columns[-1]]
-
-
-def test_feature():
-    # file = pd.read_csv("Data/DataForAnalysation/2019_09_10_12_09_33_Walking_Watch.csv")
-    #
-    # file.columns = ["time", "accX", "accY", "accZ", "rotX", "rotY", "rotZ", "graX", "graY", "graZ", "activity"]
-    #
-    # del file['time']
-    # del file['activity']
-    # file = file.astype(
-    #     {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
-    #      "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
-    #
-    # sectioned_data = sliding_window(file, Main.window_size, int(Main.window_size / 2))
-    # for window in sectioned_data:
-    #     window = pd.DataFrame(window)
-    #     output = iqr(window, axis=0)
-    #
-    #     print(output)
-
-    file1 = pd.read_csv("Data/TrainingSet/data_ts.csv")
-    file2 = pd.read_csv("Data/TrainingSet/data_ts_final.csv")
-
-    print(len(file1.columns))
-    print(len(file2.columns))

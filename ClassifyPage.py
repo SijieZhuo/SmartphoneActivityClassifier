@@ -42,6 +42,9 @@ class ClassifyPage(tk.Frame):
         self.method_text = tk.StringVar()
         self.method_text.set("Time/Frequency")
 
+        self.combine_text = tk.StringVar()
+        self.combine_text.set("Combine reading & scrolling")
+
         self.data_file_path = tk.StringVar()
         data_label = tk.Label(self, textvariable=self.data_file_path)
         data_label.grid(column=1, pady=3)
@@ -74,6 +77,12 @@ class ClassifyPage(tk.Frame):
                                     width=25)
         self.method_btn.grid(column=1, pady=3)
 
+        # selecting whether combining reading and scrolling is applied or not
+        self.combine_btn = tk.Button(self, textvariable=self.combine_text,
+                                     command=lambda: self.select_label_combination(),
+                                     width=25)
+        self.combine_btn.grid(column=1, pady=3)
+
         # actual realtime classification
         classify_btn = tk.Button(self, text="Classify", command=lambda: self.classify_btn_hit(), width=25)
         classify_btn.grid(column=1, pady=3)
@@ -90,7 +99,7 @@ class ClassifyPage(tk.Frame):
         validate_btn = tk.Button(self, text="Validate", command=lambda: self.validate_btn_hit(), width=25)
         validate_btn.grid(column=1, pady=3)
 
-
+        # validate the model by randomising the target
         validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random(),
                                         width=25)
         validate_random_btn.grid(column=1, pady=3)
@@ -123,6 +132,9 @@ class ClassifyPage(tk.Frame):
         self.setup_window()
 
     def setup_window(self):
+        """
+        This function setup the configuration of the classification window
+        """
         self.window.wm_title("Classification")
         self.window.geometry("600x400")
         self.window.withdraw()
@@ -151,6 +163,10 @@ class ClassifyPage(tk.Frame):
         self.accuracy3.pack()
 
     def update_window(self, prob):
+        """
+        this function updates the classification window in real time
+        :param prob: the probability of each of the labels
+        """
         firstPrediction = prob[0]
         secondPrediction = prob[1]
         thirdPrediction = prob[2]
@@ -164,76 +180,16 @@ class ClassifyPage(tk.Frame):
         self.window_text3_accuracy.set(thirdPrediction[1])
 
     def plot_coorelation(self):
+        """
+        This function generates
+        """
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
         data_file.astype(np.float32)
         corr = data_file.corr()
         target_file.columns = ['target']
+        self.change_read_to_scroll(target_file)
 
-        # with open("Data/TrainingSet/corr.csv", 'w', newline='') as writeDataFile:
-        #     writer = csv.writer(writeDataFile)
-        #     writer.writerows(corr.values)
-        # writeDataFile.close()
-        # print("saved")
-
-        # columns = np.full((corr.shape[0],), True, dtype=bool)
-        # for i in range(corr.shape[0]):
-        #     for j in range(i + 1, corr.shape[0]):
-        #         if corr.iloc[i, j] >= 0.9 or corr.iloc[i, j] <= -0.9:
-        #             if columns[j]:
-        #                 columns[j] = False
-        # selected_columns = data_file.columns[columns]
-        #
-        # print(selected_columns)
-        # print(len(selected_columns))
-
-        # data = data[selected_columns]
-
-        # cols = list(data_file.columns)
-        # pmax = 1
-        # while (len(cols) > 0):
-        #     p = []
-        #     X_1 = data_file[cols]
-        #     X_1 = sm.add_constant(X_1)
-        #     y = np.asarray(target_file['target'])
-        #     model = sm.OLS(y, np.asarray(X_1))
-        #     model = model.fit()
-        #     p = pd.Series(model.pvalues.values[1:], index=cols)
-        #     pmax = max(p)
-        #     feature_with_p_max = p.idxmax()
-        #     if (pmax > 0.05):
-        #         cols.remove(feature_with_p_max)
-        #     else:
-        #         break
-        # selected_features_BE = cols
-        # print(selected_features_BE)
-
-        # reg = LassoCV()
-        # reg.fit(data_file, target_file['target'])
-        # print("Best alpha using built-in LassoCV: %f" % reg.alpha_)
-        # print("Best score using built-in LassoCV: %f" % reg.score(data_file, target_file['target']))
-        # coef = pd.Series(reg.coef_, index=data_file.columns)
-        #
-        # print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " + str(
-        #     sum(coef == 0)) + " variables")
-        #
-        # imp_coef = coef.sort_values()
-        # import matplotlib
-        # matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
-        # imp_coef.plot(kind="barh")
-        # plt.title("Feature importance using Lasso Model")
-
-        # relevance_table = calculate_relevance_table(data_file, target_file['target'])
-        # relevant_features = relevance_table[relevance_table.relevant].feature
-        # with open("Data/TrainingSet/features.csv", 'w', newline='') as writeTargetFile:
-        #     writer = csv.writer(writeTargetFile)
-        #     writer.writerows([relevance_table])
-        # writeTargetFile.close()
-        # with open("Data/TrainingSet/features.csv", 'a', newline='') as writeTargetFile:
-        #     writer = csv.writer(writeTargetFile)
-        #     writer.writerows(relevance_table.values)
-        # writeTargetFile.close()
-        change_read_to_scroll(target_file)
         fig = plt.figure()
         ax = fig.add_subplot(111)
         cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
@@ -247,21 +203,20 @@ class ClassifyPage(tk.Frame):
         plt.show()
 
     def update_data(self, data):
-
+        """
+        This function gather the real-time data from bluetooth and use them in feature extraction and classification
+        :param data: raw data from bluetooth
+        """
         if self.is_classifying is True:
             data2 = data.decode("utf-8")
             data3 = data2.replace(' ', '')
             data4 = data3.replace('[', '')
             phone_data = data4.replace(']', '').split(',')
-            classify_data = []
             if len(phone_data) == 50:
                 for i in range(0, len(phone_data)):
                     if i % 10 != 0:
                         phone_data[i] = float(phone_data[i])
-                        # classify_data.append(float(phone_data[i]))
-                        # phone_data[i].astype(float32)
 
-                # float_data = [float(i) for i in phone_data]
                 if self.method_text.get() == 'tsfresh':
                     print("tsfresh")
                     separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
@@ -287,13 +242,15 @@ class ClassifyPage(tk.Frame):
                             self.classify_window(self.current_processed_data.data)
 
     def classify_window(self, data):
+        """
+        This function is used to generate the prediction from the real-time data collected
+        :param data: a window of raw data
+        """
         if self.is_classifying is True:
             if self.method_text.get() == 'tsfresh':
                 data_to_predict = data.values
             elif self.method_text.get() == 'Time/Frequency':
                 data_to_predict = [data]
-
-            # prediction = self.clf6.predict(data_to_predict)
 
             probability = self.clf6.predict_proba(data_to_predict)
             prediction_prob = {}
@@ -303,7 +260,10 @@ class ClassifyPage(tk.Frame):
             self.update_window(sorted_prob)
 
     def classify_btn_hit(self):
-
+        """
+        This function is triggered by the classify button press, it generate a
+        new window and start performing real-time classification on smartphone activities
+        """
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
 
@@ -311,7 +271,7 @@ class ClassifyPage(tk.Frame):
             target_file.columns = ['index', 'target']
         elif self.method_text.get() == 'Time/Frequency':
             target_file.columns = ['target']
-        change_read_to_scroll(target_file)
+        self.change_read_to_scroll(target_file)
 
         self.clf6.fit(data_file.values, target_file['target'])
         self.is_classifying = True
@@ -319,12 +279,30 @@ class ClassifyPage(tk.Frame):
         self.window.deiconify()
 
     def select_classify_method(self):
+        """
+        toggle the text appeared for the button, the method selected should match with
+        the method used for feature extraction
+        """
         if self.method_text.get() == "Time/Frequency":
             self.method_text.set("tsfresh")
         elif self.method_text.get() == "tsfresh":
             self.method_text.set("Time/Frequency")
 
+    def select_label_combination(self):
+        """
+        toggle the text appeared for the button, the method selects whether the combination of
+        reading and scrolling activities should be combined or not
+        """
+        if self.combine_text.get() == "Combine reading & scrolling":
+            self.combine_text.set("Do not combine")
+        elif self.combine_text.get() == "Do not combine":
+            self.combine_text.set("Combine reading & scrolling")
+
     def validate_btn_hit(self):
+        """
+        This function is trigger by the validate button press, it would read the files been
+        browsed and analyse the performance of the ML models on the data given
+        """
         data_file = pd.read_csv(self.data_file_path.get(), encoding='utf-8')
         target_file = pd.read_csv(self.target_file_path.get(), encoding='utf-8')
 
@@ -333,11 +311,14 @@ class ClassifyPage(tk.Frame):
         elif self.method_text.get() == 'Time/Frequency':
             target_file.columns = ['target']
 
-            target_file = change_read_to_scroll(target_file)
+        target_file = self.change_read_to_scroll(target_file)
 
         self.output_ml_validate_score(data_file.values, target_file['target'])
 
     def output_ml_validate_score(self, data, target):
+        """
+        perform 5 folds cross validation for the ML model trained
+        """
 
         scaler = StandardScaler()
         scaler.fit(data)
@@ -371,33 +352,17 @@ class ClassifyPage(tk.Frame):
         scores = cross_val_score(self.clf7, data, target, cv=5)
         print("AdaBoosting: " + str(scores.mean()))
 
-        # mlp = ExtraTreesClassifier()
-        #
-        # parameter_space = {
-        #     'n_estimators': [10, 50, 100, 200],
-        #     'criterion': ['gini', 'entropy'],
-        #     'min_samples_split': [0.05, 0.1, 0.3, 0.5, 0.8, 1.0, 2, 4, 6],
-        #     'min_samples_leaf': [1, 0.1, 0.3, 0.5]
-        # }
-        #
-        # clf = GridSearchCV(mlp, parameter_space, n_jobs=-1, cv=5)
-        # clf.fit(data, target)
-        #
-        # # Best paramete set
-        # print('Best parameters found:\n', clf.best_params_)
-        #
-        # # All results
-        # means = clf.cv_results_['mean_test_score']
-        # stds = clf.cv_results_['std_test_score']
-        # for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-        #     print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
-
     def confusion_matrix(self):
+        """
+        This function generated the confusion matrix for the training set provided
+        by the files user browsed
+        :return: a new window with generated confusion matrix
+        """
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
 
         target_file.columns = ['target']
-        target_file = change_read_to_scroll(target_file)
+        target_file = self.change_read_to_scroll(target_file)
 
         # Split the data into a training set and a test set
         X_train, X_test, y_train, y_test = train_test_split(data_file, target_file, random_state=0)
@@ -412,6 +377,10 @@ class ClassifyPage(tk.Frame):
         plt.show()
 
     def validate_by_random(self):
+        """
+        This function validates the algorithms for the ML model by
+        randomising the labels in the target file
+        """
         data_file = pd.read_csv(self.data_file_path.get())
         target_file = pd.read_csv(self.target_file_path.get())
 
@@ -419,6 +388,8 @@ class ClassifyPage(tk.Frame):
             target_file.columns = ['index', 'target']
         elif self.method_text.get() == 'Time/Frequency':
             target_file.columns = ['target']
+
+        self.change_read_to_scroll(target_file)
 
         lables = unique_labels(target_file['target'])
 
@@ -431,12 +402,28 @@ class ClassifyPage(tk.Frame):
 
         self.output_ml_validate_score(data_file, target_df['target'])
 
+    def change_read_to_scroll(self, targetData):
+        """
+        This function combines the label of reading and scrolling
+        into one label, which is scrolling
+        :param targetData: the target file of a training set
+        :return: a file with label combined
+        """
+        if self.combine_text == "Combine reading & scrolling":
+            targetData.loc[targetData['target'] == 'Sitting_Read', 'target'] = 'Sitting_Scroll'
+            targetData.loc[targetData['target'] == 'Walking_Read', 'target'] = 'Walking_Scroll'
+            targetData.loc[targetData['target'] == 'Multitasking_Read', 'target'] = 'Multitasking_Scroll'
+
+        return targetData
+
 
 def browse_btn_hit(folder_path):
-    # Allow user to select a directory and store it in global var
-    # called folder_path
+    """
+    This function used to trigger the browse button event to save the
+    file path to the inout parameter
+    :param folder_path: the StringVar that stores the file path
+    """
     filename = filedialog.askopenfilename()
-    # filename = filename.split('/')[-1]
     folder_path.set(filename)
     print(filename)
 
@@ -496,14 +483,6 @@ def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, 
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
     return ax
-
-
-def change_read_to_scroll(file):
-    file.loc[file['target'] == 'Sitting_Read', 'target'] = 'Sitting_Scroll'
-    file.loc[file['target'] == 'Walking_Read', 'target'] = 'Walking_Scroll'
-    file.loc[file['target'] == 'Multitasking_Read', 'target'] = 'Multitasking_Scroll'
-
-    return file
 
 
 class DataWindow(object):

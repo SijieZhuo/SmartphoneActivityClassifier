@@ -9,11 +9,10 @@ class CollectPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        # print(self.controller.frames)
         self.data = controller.current_data
         self.data.bind_to(self.update_data)
-        # print(self.data)
 
+        # layout the tabels that would be seen on the page
         self.walk_idle = tk.Label(self, text="Walk_Idle")
         self.walk_idle.grid(row=1, column=1, padx=5, pady=5)
         self.walk_type = tk.Label(self, text="Walk_Type")
@@ -45,6 +44,7 @@ class CollectPage(tk.Frame):
         self.multi_watch = tk.Label(self, text="Multi_Watch")
         self.multi_watch.grid(row=4, column=3, padx=5, pady=5)
 
+        # layout the buttons
         self.record_btn_text = tk.StringVar()
         record_btn = tk.Button(self, textvariable=self.record_btn_text, command=lambda: record_btn_hit(self), width=18)
         self.record_btn_text.set("start recording")
@@ -67,12 +67,8 @@ class CollectPage(tk.Frame):
         data4 = data3.replace('[', '')
         phone_data = data4.replace(']', '').split(',')
 
-        if len(phone_data) != 50:
-            print("current: " + self.currentActivity)
-            print(phone_data)
-
+        if len(phone_data) != 50:  # when the string read form the phone is not the actual data
             if len(phone_data) == 1:
-                # print(phone_data)
                 if phone_data[0].count(phone_data[0][:5]) > 1:
                     phone_data[0] = phone_data[0][:int((len(phone_data[0]) / 2))]
                     print(phone_data[0])
@@ -84,37 +80,35 @@ class CollectPage(tk.Frame):
                 with open(csvName, 'a', newline='') as writeFile:
                     writer = csv.writer(writeFile)
                     writer.writerows(phone_data)
-                    print("write")
                 writeFile.close()
-        else:
+        else:  # reading the actual data
             if self.isRecording is True:
-                #print(phone_data)
-
-                string = re.findall('[a-zA-Z_]', phone_data[0])
-                front = ''.join(string)
-                string2 = re.findall('[a-zA-Z_]', phone_data[-1])
-                rear = ''.join(string2)
+                # remove the not wanted string due the bluetooth transmission (concatinate with
+                # former or latter string )
+                stringChar = re.findall('[a-zA-Z_]', phone_data[0])
+                front = ''.join(stringChar)
+                stringChar2 = re.findall('[a-zA-Z_]', phone_data[-1])
+                rear = ''.join(stringChar2)
                 if front != '':
                     self.update_avtivity(front)
                     return
                 if rear != '':
                     self.update_avtivity(rear)
                     return
-
                 phone_data[0] = re.sub('[a-zA-Z_]', '', phone_data[0])
                 phone_data[-1] = re.sub('[a-zA-Z_]', '', phone_data[-1])
 
+                # seperate the data into columns
                 for i in range(0, len(phone_data)):
                     if i % 10 != 0:
                         phone_data[i] = float(phone_data[i])
                         # phone_data[i].astype(float32)
-
-                # float_data = [float(i) for i in phone_data]
                 separated = [phone_data[x:x + 10] for x in range(0, len(phone_data), 10)]
 
                 for row in separated:
                     row.append(self.currentActivity)
 
+                # save to csv file
                 fileName = "Data/" + self.folderName + "/" + self.folderName + "_" + self.currentActivity + ".csv"
                 with open(fileName, 'a', newline='') as csvFile:
                     writer = csv.writer(csvFile)
@@ -123,6 +117,10 @@ class CollectPage(tk.Frame):
                 csvFile.close()
 
     def update_avtivity(self, activity):
+        """
+        This function setup the current activity to the be one read from the data
+        :param activity: current activity
+        """
         if self.currentActivity == "finished":
             if activity != "finished":
                 self.setup_activity_folder(activity)
@@ -134,6 +132,10 @@ class CollectPage(tk.Frame):
                 self.currentActivity = "finished"
 
     def setup_activity_folder(self, name):
+        """
+        Setup the csv file for storing the incoming bluetooth data
+        :param name: name of the file
+        """
         self.currentActivity = name
         self.change_label_color("blue")
         csvName = "Data/" + self.folderName + "/" + self.folderName + "_" + name + ".csv"
@@ -146,6 +148,10 @@ class CollectPage(tk.Frame):
         writeFile.close()
 
     def change_label_color(self, colour):
+        """
+        This function changes a specific label to the colour specified in the input parameter
+        :param colour: colour the label is changing to
+        """
         if self.currentActivity == "Walking_Type":
             self.walk_type.configure(foreground=colour)
         elif self.currentActivity == "Walking_Read":
