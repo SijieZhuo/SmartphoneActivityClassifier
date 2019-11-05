@@ -446,6 +446,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, 
     lables = []
     for lable in classes:
         lable = lable.replace("_", " ")
+        lable = lable.replace("Multitasking","Cognitive Load")
         lables.append(lable)
     lables = np.array(lables)
 

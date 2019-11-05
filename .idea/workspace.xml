@@ -4,10 +4,6 @@
     <list default="true" id="e43bbe29-2b8a-47ae-81cb-a6b775a5f54e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ClassifyPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ClassifyPage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CollectPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/CollectPage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FeatureExtractionPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/FeatureExtractionPage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StartPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/StartPage.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,7 +16,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
+            <state relative-caret-position="57">
               <caret line="9" column="81" selection-start-line="9" selection-start-column="81" selection-end-line="9" selection-end-column="81" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
@@ -33,7 +29,7 @@
         <entry file="file://$PROJECT_DIR$/StartPage.py">
           <provider selected="true" editor-type-id="text-editor">
             <state>
-              <caret column="11" lean-forward="true" selection-start-column="11" selection-end-column="11" />
+              <caret column="11" selection-start-column="11" selection-end-column="11" />
             </state>
           </provider>
         </entry>
@@ -41,8 +37,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CollectPage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3591">
-              <caret line="189" lean-forward="true" selection-start-line="189" selection-end-line="189" />
+            <state relative-caret-position="3515">
+              <caret line="189" selection-start-line="189" selection-end-line="189" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -53,15 +49,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FeatureExtractionPage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-6132">
-              <folding>
-                <element signature="e#0#10#0" expanded="true" />
-                <element signature="e#12297#12891#0" />
-                <element signature="e#12916#12953#0" />
-                <element signature="e#13000#13551#0" />
-                <element signature="e#13588#13736#0" />
-                <element signature="e#13763#13886#0" />
-              </folding>
+            <state>
+              <caret column="2" selection-start-column="2" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -69,12 +58,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ClassifyPage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3401">
-              <caret line="202" column="18" lean-forward="true" selection-start-line="202" selection-start-column="18" selection-end-line="202" selection-end-column="18" />
-              <folding>
-                <element signature="e#18224#20033#0" />
-                <element signature="e#20356#20710#0" />
-              </folding>
+            <state relative-caret-position="141">
+              <caret line="443" column="49" selection-start-line="443" selection-start-column="49" selection-end-line="443" selection-end-column="49" />
             </state>
           </provider>
         </entry>
@@ -87,6 +72,11 @@
         <option value="Python Script" />
       </list>
     </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>multi</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -114,7 +104,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -126,6 +115,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -246,14 +236,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="735" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18350849" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18674211" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3294702" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4987874" visible="true" weight="0.25993377" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4987874" weight="0.25993377" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39900663" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -303,26 +292,9 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/CollectPage.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3591">
-          <caret line="189" lean-forward="true" selection-start-line="189" selection-end-line="189" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/StartPage.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="11" lean-forward="true" selection-start-column="11" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
+        <state relative-caret-position="57">
           <caret line="9" column="81" selection-start-line="9" selection-start-column="81" selection-end-line="9" selection-end-column="81" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
@@ -330,28 +302,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/FeatureExtractionPage.py">
+    <entry file="file://$PROJECT_DIR$/StartPage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-6132">
+        <state>
+          <caret column="11" selection-start-column="11" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CollectPage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3515">
+          <caret line="189" selection-start-line="189" selection-end-line="189" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-            <element signature="e#12297#12891#0" />
-            <element signature="e#12916#12953#0" />
-            <element signature="e#13000#13551#0" />
-            <element signature="e#13588#13736#0" />
-            <element signature="e#13763#13886#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FeatureExtractionPage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="2" selection-start-column="2" selection-end-column="2" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ClassifyPage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3401">
-          <caret line="202" column="18" lean-forward="true" selection-start-line="202" selection-start-column="18" selection-end-line="202" selection-end-column="18" />
-          <folding>
-            <element signature="e#18224#20033#0" />
-            <element signature="e#20356#20710#0" />
-          </folding>
+        <state relative-caret-position="141">
+          <caret line="443" column="49" selection-start-line="443" selection-start-column="49" selection-end-line="443" selection-end-column="49" />
         </state>
       </provider>
     </entry>
