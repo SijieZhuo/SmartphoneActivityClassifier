@@ -25,6 +25,14 @@ class ClassifierApp(tk.Tk):
         if not os.path.exists("Data/TrainingSet"):
             os.makedirs("Data/TrainingSet")
 
+        if not os.path.exists("Data/CVFolder"):
+            os.makedirs("Data/CVFolder")
+            os.makedirs("Data/CVFolder/part1")
+            os.makedirs("Data/CVFolder/part2")
+            os.makedirs("Data/CVFolder/part3")
+            os.makedirs("Data/CVFolder/part4")
+            os.makedirs("Data/CVFolder/part5")
+
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
         self.winfo_toplevel().title("Smartphone activity classification")
 
@@ -77,6 +85,6 @@ class PhoneData(object):
 
 if __name__ == "__main__":
     main = ClassifierApp()
-    main.wm_geometry("550x400")
+    main.wm_geometry("550x480")
     main.title("Smartphone activity classification")
     main.mainloop()

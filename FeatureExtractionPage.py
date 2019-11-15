@@ -214,12 +214,28 @@ def time_frequency_feature_extraction():
     """
     This function calculates the features in the selected folder and save the extracted file in TrainingSet
     """
+    if os.path.exists("Data/TrainingSet/data_tf.csv"):
+        os.remove("Data/TrainingSet/data_tf.csv")
+
+    if os.path.exists("Data/TrainingSet/target_tf.csv"):
+        os.remove("Data/TrainingSet/target_tf.csv")
+
+    manual_extraction("Data/DataForAnalysation", "Data/TrainingSet", "tf.csv")
+
+
+
+def manual_extraction(inputLocation, outputLocation, fileName):
+    """
+    This function calculates the features in the selected folder and save the extracted file in TrainingSet
+    """
     filename_list = []
     # get file name
-    for file in os.listdir("Data/DataForAnalysation"):
+    for file in os.listdir(inputLocation):
         if file.endswith(".csv"):
-            path = os.getcwd() + "\Data\DataForAnalysation\\" + file
+            path = os.getcwd() + "\\" + inputLocation + "\\" + file
             filename_list.append(path)
+
+
 
     for filepath in filename_list:
         print(filepath)
@@ -242,21 +258,21 @@ def time_frequency_feature_extraction():
             window = window.astype(
                 {"accX": np.float32, "accY": np.float32, "accZ": np.float32, "rotX": np.float32, "rotY": np.float32,
                  "rotZ": np.float32, "graX": np.float32, "graY": np.float32, "graZ": np.float32})
-            result = feature_extraction1(window)
+            result = feature_extraction(window)
 
-            with open("Data/TrainingSet/data_tf.csv", 'a', newline='') as writeTargetFile:
+            with open(outputLocation + "/data_" + fileName, 'a', newline='') as writeTargetFile:
                 writer = csv.writer(writeTargetFile)
                 writer.writerows([result])
             writeTargetFile.close()
 
-            with open("Data/TrainingSet/target_tf.csv", 'a', newline='') as writeTargetFile:
+            with open(outputLocation + "/target_" + fileName, 'a', newline='') as writeTargetFile:
                 writer = csv.writer(writeTargetFile)
                 writer.writerows([[activity]])
             writeTargetFile.close()
 
 
 # manually calculate time and frequency domain features
-def feature_extraction1(data):
+def feature_extraction(data):
     """
     This function manually calculate time and frequency domain features
     :param data: the input raw data window

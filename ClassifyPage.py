@@ -1,6 +1,8 @@
 import csv
 import tkinter as tk
 from tkinter import filedialog
+import os
+from statistics import mean, stdev
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -303,54 +305,96 @@ class ClassifyPage(tk.Frame):
         This function is trigger by the validate button press, it would read the files been
         browsed and analyse the performance of the ML models on the data given
         """
-        data_file = pd.read_csv(self.data_file_path.get(), encoding='utf-8')
-        target_file = pd.read_csv(self.target_file_path.get(), encoding='utf-8')
+        # data_file = pd.read_csv(self.data_file_path.get(), encoding='utf-8')
+        # target_file = pd.read_csv(self.target_file_path.get(), encoding='utf-8')
+        #
+        # if self.method_text.get() == 'tsfresh':
+        #     target_file.columns = ['index', 'target']
+        # elif self.method_text.get() == 'Time/Frequency':
+        #     target_file.columns = ['target']
+        #
+        # target_file = self.change_read_to_scroll(target_file)
+        #
+        # self.output_ml_validate_score(data_file.values, target_file['target'])
 
-        if self.method_text.get() == 'tsfresh':
-            target_file.columns = ['index', 'target']
-        elif self.method_text.get() == 'Time/Frequency':
-            target_file.columns = ['target']
+        # set up folder name
+        folder_Name_List = []
+        for folderName in os.listdir("Data/CVFolder"):
+            path = os.getcwd() + "/Data/CVFolder/" + folderName
+            folder_Name_List.append(path)
+            if not os.path.exists(path + "/validationData"):
+                os.makedirs("Data/CVFolder/" + folderName + "/validationData")
 
-        target_file = self.change_read_to_scroll(target_file)
+            for file in path + "/validation":
+                file_path = os.path.join(path + "/validation", file)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
 
-        self.output_ml_validate_score(data_file.values, target_file['target'])
+            FeatureExtractionPage.manual_extraction("Data/CVFolder/" + folderName,
+                                                    "Data/CVFolder/" + folderName + "/validationData", "test.csv")
+        scores1 = []
+        scores2 = []
+        scores3 = []
+        scores4 = []
+        scores5 = []
+        scores6 = []
+        scores7 = []
 
-    def output_ml_validate_score(self, data, target):
-        """
-        perform 5 folds cross validation for the ML model trained
-        """
+        for folder in folder_Name_List:
 
-        scaler = StandardScaler()
-        scaler.fit(data)
-        data2 = scaler.transform(data)
+            # separate training and testing data
+            temp = folder_Name_List.copy()
+            temp.remove(folder)
+            print(folder)
 
-        self.clf.fit(data2, target)
-        scores = cross_val_score(self.clf, data2, target, cv=5)
-        print("MLP: " + str(scores.mean()))
+            for trainingFolder in temp:
+                data = pd.read_csv(trainingFolder + "/validationData/data_test.csv")
+                target = pd.read_csv(trainingFolder + "/validationData/target_test.csv")
 
-        self.clf2.fit(data, target)
-        scores = cross_val_score(self.clf2, data, target, cv=5)
-        print("RF: " + str(scores.mean()))
+                with open(folder + "/validationData/data_training.csv", 'a', newline='') as writeTargetFile:
+                    data.to_csv(writeTargetFile, header=False, index=False)
+                writeTargetFile.close()
+                with open(folder + "/validationData/target_training.csv", 'a', newline='') as writeTargetFile:
+                    target.to_csv(writeTargetFile, header=False, index=False)
+                writeTargetFile.close()
 
-        self.clf3.fit(data, target)
-        scores = cross_val_score(self.clf3, data, target, cv=5)
-        print("KNN: " + str(scores.mean()))
+            # perform validation
+            trainingData = pd.read_csv(folder + "/validationData/data_training.csv")
+            trainingTarget = pd.read_csv(folder + "/validationData/target_training.csv")
+            testData = pd.read_csv(folder + "/validationData/data_test.csv")
+            testTarget = pd.read_csv(folder + "/validationData/target_test.csv")
 
-        self.clf4.fit(data, target)
-        scores = cross_val_score(self.clf4, data, target, cv=5)
-        print("SVM: " + str(scores.mean()))
+            trainingTarget.columns = ['target']
+            testTarget.columns = ['target']
 
-        self.clf5.fit(data, target)
-        scores = cross_val_score(self.clf5, data, target, cv=5)
-        print("Bagging: " + str(scores.mean()))
+            scaler = StandardScaler()
+            scaler.fit(trainingData)
+            trainingData2 = scaler.transform(trainingData)
+            scaler.fit(testData)
+            testData2 = scaler.transform(testData)
 
-        self.clf6.fit(data, target)
-        scores = cross_val_score(self.clf6, data, target, cv=5)
-        print("ExtraTree: " + str(scores.mean()))
+            scores1.append(output_ml_validate_score(self.clf, trainingData2, trainingTarget["target"], testData2,
+                                                    testTarget["target"]))
+            scores2.append(output_ml_validate_score(self.clf2, trainingData, trainingTarget["target"], testData,
+                                                    testTarget["target"]))
+            scores3.append(output_ml_validate_score(self.clf3, trainingData, trainingTarget["target"], testData,
+                                                    testTarget["target"]))
+            scores4.append(output_ml_validate_score(self.clf4, trainingData, trainingTarget["target"], testData,
+                                                    testTarget["target"]))
+            scores5.append(output_ml_validate_score(self.clf5, trainingData, trainingTarget["target"], testData,
+                                                    testTarget["target"]))
+            scores6.append(output_ml_validate_score(self.clf6, trainingData, trainingTarget["target"], testData,
+                                                    testTarget["target"]))
+            scores7.append(output_ml_validate_score(self.clf7, trainingData, trainingTarget["target"], testData,
+                                                    testTarget["target"]))
 
-        self.clf7.fit(data, target)
-        scores = cross_val_score(self.clf7, data, target, cv=5)
-        print("AdaBoosting: " + str(scores.mean()))
+        print("MLP          mean: " + str(mean(scores1)) + " std: " + str(stdev(scores1)))
+        print("RF           mean: " + str(mean(scores2)) + " std: " + str(stdev(scores2)))
+        print("KNN          mean: " + str(mean(scores3)) + " std: " + str(stdev(scores3)))
+        print("SVM          mean: " + str(mean(scores4)) + " std: " + str(stdev(scores4)))
+        print("Bagging      mean: " + str(mean(scores5)) + " std: " + str(stdev(scores5)))
+        print("ET           mean: " + str(mean(scores6)) + " std: " + str(stdev(scores6)))
+        print("AdaBoosting  mean: " + str(mean(scores7)) + " std: " + str(stdev(scores7)))
 
     def confusion_matrix(self):
         """
@@ -417,14 +461,14 @@ class ClassifyPage(tk.Frame):
         return targetData
 
 
-def browse_btn_hit(folder_path):
+def browse_btn_hit(file_path):
     """
     This function used to trigger the browse button event to save the
     file path to the inout parameter
     :param folder_path: the StringVar that stores the file path
     """
     filename = filedialog.askopenfilename()
-    folder_path.set(filename)
+    file_path.set(filename)
     print(filename)
 
 
@@ -446,7 +490,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, 
     lables = []
     for lable in classes:
         lable = lable.replace("_", " ")
-        lable = lable.replace("Multitasking","Cognitive Load")
+        lable = lable.replace("Multitasking", "Cognitive Load")
         lables.append(lable)
     lables = np.array(lables)
 
@@ -484,6 +528,12 @@ def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, 
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
     return ax
+
+
+def output_ml_validate_score(model, trainingData, trainingTarget, testData, testTarget):
+    model.fit(trainingData, trainingTarget)
+    score = model.score(testData, testTarget)
+    return score
 
 
 class DataWindow(object):
