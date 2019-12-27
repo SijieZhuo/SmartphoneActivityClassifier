@@ -10,6 +10,7 @@ from sklearn import neighbors
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, ExtraTreesClassifier, AdaBoostClassifier
 from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
@@ -17,6 +18,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.preprocessing import StandardScaler
 # from tsfresh.feature_selection.relevance import calculate_relevance_table
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import learning_curve
 
 import statsmodels.api as sm
 
@@ -103,6 +105,11 @@ class ClassifyPage(tk.Frame):
         validate_random_btn = tk.Button(self, text="Validate by Random", command=lambda: self.validate_by_random(),
                                         width=25)
         validate_random_btn.grid(column=1, pady=3)
+
+        # learning curve
+        learning_curve_btn = tk.Button(self, text="Learning Curve", command=lambda: self.plot_learning_curve(),
+                                        width=25)
+        learning_curve_btn.grid(column=1, pady=3)
 
         back_btn = tk.Button(self, text="back", command=lambda: controller.show_frame("StartPage"), width=25)
         back_btn.grid(column=1, pady=3)
@@ -416,6 +423,51 @@ class ClassifyPage(tk.Frame):
 
         return targetData
 
+    def plot_learning_curve(self):
+        data_file = pd.read_csv(self.data_file_path.get())
+        labels = []
+        i=0
+        while i<71:
+            labels.append("data {}".format(i))
+            i += 1
+
+        data_file.columns = labels
+        target_file = pd.read_csv(self.target_file_path.get())
+        data_file.insert(loc=71, column='label', value=target_file)
+        #print(data_file.info())
+
+        train_sizes, train_scores, test_scores = learning_curve(estimator=self.clf6,
+                                                                X=data_file[labels],
+                                                                y=np.ravel(data_file['label']),
+                                                                train_sizes = [10, 50, 250, 1000, 2000, 4000],
+                                                                cv=5,
+                                                                shuffle=True
+                                                                )
+        #train_scores_mean = train_scores.mean(axis=1)
+        test_scores_mean = test_scores.mean(axis=1)
+
+        values = pd.Series(test_scores_mean, index=train_sizes)
+        #print('Mean training scores\n\n', pd.Series(train_scores_mean, index=train_sizes))
+        print('\n', '-' * 20)  # separator
+        print('\nMean validation scores\n\n', pd.Series(test_scores_mean, index=train_sizes))
+
+        plot = values.plot(kind='line')
+        plot.set_xlabel("train_size")
+        plot.set_ylabel("accuracy")
+        plot.set_title("learning_curve")
+
+        plot.plot
+        plt.show()
+
+
+
+
+
+
+
+
+
+
 
 def browse_btn_hit(folder_path):
     """
@@ -426,6 +478,10 @@ def browse_btn_hit(folder_path):
     filename = filedialog.askopenfilename()
     folder_path.set(filename)
     print(filename)
+
+
+
+
 
 
 def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, cmap=plt.cm.Blues):
